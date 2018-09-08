@@ -14,6 +14,7 @@ import os, signal
 import logging
 
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
@@ -21,17 +22,13 @@ import selenium.webdriver.support.expected_conditions as EC
 import selenium.webdriver.support.ui as ui
 # from tqdm import tqdm
 
-# from kor2eng import Kor2Eng
-# from logger import setup_logging
 
 FLAG_DEBUG = False
 
-IDX_KT = (1, 7, 1, 50)
-IDX_LG = (1, 10)
-IDX_SKT = (2, 20)
 
 BASE_PATH = '/home/ubuntu/server_dothome'
 PHANTOMJS_PATH = '/usr/local/share/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
+CHROMEDRIVER_PATH = '/home/ubuntu/chromedriver'
 
 
 class WebDriver:
@@ -49,6 +46,7 @@ class WebDriver:
         self.MAX_COUNT = 5
 
         self.target_url = target_url
+        self.PATH_SCREENSHOT_DIR = './screenshot'
         self.window = window
         self.driver = None
         self.start_driver()
@@ -71,11 +69,13 @@ class WebDriver:
         self.logger.info("driver warming up")
 
         try:
-
+            options = Options()
+            options.add_argument('--headless')
+            options.add_argument('--disable-gpu')
             if not bool(kwargs):
-                self.driver = webdriver.PhantomJS(PHANTOMJS_PATH)
+                self.driver = webdriver.Chrome(CHROMEDRIVER_PATH, chrome_options=options)
             else:
-                self.driver = webdriver.PhantomJS(PHANTOMJS_PATH, kwargs)
+                self.driver = webdriver.Chrome(CHROMEDRIVER_PATH, chrome_options=options)
             """
             options = webdriver.ChromeOptions()
             options.add_argument("headless")  # remove this line if you want to see the browser popup
@@ -95,6 +95,11 @@ class WebDriver:
 
         except:
             self.logger.error('error in quit_driver', exc_info=True)
+
+    def screenshot(self, name="shoot.png"):
+        filename = "{}/{}".format(self.PATH_SCREENSHOT_DIR, name)
+        self.driver.save_screenshot(filename)
+
 
     def get_pid(self):
         try:
