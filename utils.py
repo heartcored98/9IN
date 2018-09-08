@@ -29,22 +29,6 @@ def load_yml_config(filename='settings.yml'):
             return None
 
 
-def hash_attribute(value, level=256):
-    str_as_bytes = str.encode(value)
-    if level == 256:
-        hashed_value = hashlib.sha512(str_as_bytes).hexdigest()
-    elif level == 512:
-        hashed_value = hashlib.sha256(str_as_bytes).hexdigest()
-    else:
-        ValueError()
-    return hashed_value
-
-
-def attatch_timestamp(value):
-    t = str(datetime.datetime.utcnow().timestamp())
-    value = t + str(value)
-    return value
-
 
 if __name__ == '__main__':
     a = load_yml_config()
