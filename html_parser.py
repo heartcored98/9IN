@@ -43,10 +43,8 @@ class HTMLTableParser:
         for row in table.find_all('tr'):
             column_marker = 0
             columns = row.find_all('td')
-            print("====================================")
 
             for column in columns:
-                print( row_marker, column_marker, "=", " ".join(column.get_text().split()))
                 df.iat[row_marker, column_marker] = " ".join(column.get_text().split())
                 column_marker += 1
             if len(columns) > 0:
@@ -55,16 +53,18 @@ class HTMLTableParser:
         new_header = dict()
         for i, name in enumerate(column_names):
             new_header[i] = name
+        new_header[0] = 'N'
+        new_header[1] = 'id'
         df.rename(columns = new_header, inplace=True)
 
         # Convert to float if possible
-        """
+
         for col in df:
             try:
-                df[col] = df[col].astype(float)
+                df[col] = df[col].astype(int)
             except ValueError:
                 pass
-        """
+
         return df
 
 
