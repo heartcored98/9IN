@@ -157,18 +157,21 @@ class WebDriver:
 
 
     # @_retry
-    def click_btn(self, path, id=False):
+    def click_btn(self, path, id=False, selector=False):
         try:
             if self.is_visible(path):
                 if id:
                     btn = self.driver.find_element_by_id(path)
+                elif selector:
+                    btn = self.driver.find_element_by_selector(path)
                 else:
                     btn = self.driver.find_element_by_xpath(path)
                 btn.click()
             else:
                 raise NoSuchElementException
         except NoSuchElementException:
-            pass
+            print("No element")
+
         except Exception:
             self.logger.error("error in click_btn", exc_info=True)
             raise

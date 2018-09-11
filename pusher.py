@@ -76,16 +76,27 @@ class KakaoPusher(WebDriver):
         print("send")
 
         path_register = '//*[@id="mArticle"]/div/form/div[2]/button[4]'
+        self.screenshot('before_register.png')
         self.is_visible(path_register)
         self.click_btn(path_register)
 
+        selector_confirm = 'body > div:nth-child(11) > div:nth-child(2) > div > div > div.wrap_btn > button.btn_g.btn_g2'
         path_confirm = '/html/body/div[4]/div[2]/div/div/div[2]/button[2]'
+
+        print("before confirm")
         self.is_visible(path_confirm)
+        self.screenshot('before_confirm.png')
+        time.sleep(1)
+
+        # TODO : clicking confirm button with position
         self.click_btn(path_confirm)
+        btn = self.driver.find_element_by_xpath(path_confirm)
+        print(btn)
 
         # Return to waiting state
-        self.driver.get(settings.URL_KAKAO_MSG)
+        # self.driver.get(settings.URL_KAKAO_MSG)
         self.screenshot('finish.png')
+        print(self.driver.page_source)
 
 
 if __name__ == '__main__':
