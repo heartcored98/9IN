@@ -1,6 +1,9 @@
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+
 from parser import WebDriver
 from utils import load_yml_config
-import time
+
 
 settings = load_yml_config()
 
@@ -22,18 +25,18 @@ class KakaoPusher(WebDriver):
 
         # Login to the site
         self.click_btn(path_btn)
-        self.screenshot("after_login.png")
         self.driver.find_element_by_link_text("나중에 하기").click()
         self.is_visible('//*[@id="kakaoBody"]/div/div/div[2]/div[3]/a/div', 1.0)
+
+        # Connect to message page
         self.driver.get(settings.URL_KAKAO_MSG)
         self.is_visible('//*[@id="mArticle"]/div/form/div[2]/span/button[2]', 1.0)
 
 
-        # self.screenshot('login3.png')
 
     def push_msg(self, request):
-        self.driver.set_window_size(1920, 1080)
-
+        # Enable when full size screenshot is needed
+        # self.driver.set_window_size(1920, 1080)
 
         # Type Clicking
         type = request.get('type', None)
@@ -43,14 +46,12 @@ class KakaoPusher(WebDriver):
             self.click_btn(path_img)
         elif type == 'video':
             self.click_btn(path_video)
-        self.screenshot('type.png')
 
         # Content Write
         content = request.get('content', "오류 발생!")
         path_field = '//*[@id="messageWrite"]'
         textfield = self.driver.find_element_by_xpath(path_field)
         textfield.send_keys(content)
-        self.screenshot('content.png')
 
         # Link Write
         link = request.get('link', None)
@@ -67,36 +68,26 @@ class KakaoPusher(WebDriver):
             self.click_btn(path_url)
             element_url = self.driver.find_element_by_xpath(path_url)
             element_url.send_keys(link)
-            self.screenshot('link.png')
 
         # Send Msg
         path_send = '//*[@id="mArticle"]/div/form/div[2]/span/button[2]'
         self.click_btn(path_send)
-        self.screenshot('send.png')
-        print("send")
 
         path_register = '//*[@id="mArticle"]/div/form/div[2]/button[4]'
-        self.screenshot('before_register.png')
         self.is_visible(path_register)
         self.click_btn(path_register)
 
-        selector_confirm = 'body > div:nth-child(11) > div:nth-child(2) > div > div > div.wrap_btn > button.btn_g.btn_g2'
         path_confirm = '/html/body/div[4]/div[2]/div/div/div[2]/button[2]'
-
-        print("before confirm")
         self.is_visible(path_confirm)
-        self.screenshot('before_confirm.png')
-        time.sleep(1)
 
-        # TODO : clicking confirm button with position
-        self.click_btn(path_confirm)
-        btn = self.driver.find_element_by_xpath(path_confirm)
-        print(btn)
+        # Confirm Message
+        actions = ActionChains(self.driver)
+        actions.send_keys(Keys.TAB * 2)
+        actions.send_keys(Keys.ENTER)
+        actions.perform()
 
         # Return to waiting state
-        # self.driver.get(settings.URL_KAKAO_MSG)
-        self.screenshot('finish.png')
-        print(self.driver.page_source)
+        self.driver.get(settings.URL_KAKAO_MSG)
 
 
 if __name__ == '__main__':
