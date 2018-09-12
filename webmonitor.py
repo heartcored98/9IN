@@ -1,12 +1,37 @@
-from parser import WebDriver
-from utils import load_yml_config
-from html_parser import HTMLTableParser
 import pandas as pd
 import requests
 import os
 
+from pusher import KakaoPusher
+from parser import WebDriver
+from utils import load_yml_config
+from html_parser import HTMLTableParser
+
+
 settings = load_yml_config()
 
+class ContentMaker():
+
+    @classmethod
+    def content_new(self, title, link):
+        request = dict()
+        request['content'] = '새 구인 글이 도착했어요! - [{}]'.format(title)
+        request['link'] = link
+        return request
+
+    @classmethod
+    def content_changed(self, p_title, c_title, link):
+        request = dict()
+        request['content'] = '글이 수정됐어요! - [{}] -> [{}]'.format(p_title, c_title)
+        request['link'] = link
+        return request
+
+    @classmethod
+    def content_finished(self, title, link):
+        request = dict()
+        request['content'] = '구인이 마감됐어요! - [{}]'.format(title, link)
+        request['link'] = link
+        return request
 
 class MonitorARA():
     def __init__(self):
@@ -31,6 +56,10 @@ class MonitorARA():
     def set_p_table(self, table):
         self.p_table = table
 
+    def generate_url(self, index):
+        template_url = 'http://ara.kaist.ac.kr/board/Wanted/{}/?page_no=1'
+        return template_url.format(index)
+
     def get_table(self):
         html_string = requests.get(self.target_url).text
         table = self.table_parser.parse_html(html_string)[0]
@@ -51,20 +80,18 @@ class MonitorARA():
             c_title = c_table.loc[[id]]['제목'].values[0]
             if p_title != c_title:
                 if '마감' in c_title:
-                    finished_posts[id] = c_title
+                    finished_posts[id] = {'title': c_title, 'link': self.generate_url(id)}
                 else:
-                    changed_posts[id] = [p_title, c_title]
+                    changed_posts[id] = {'p_title': p_title, 'c_title': c_title, 'link': self.generate_url(id)}
 
         new_posts = dict()
         for id in set_new_posts:
             c_title = c_table.loc[[id]]['제목'].values[0]
-            new_posts[id] = c_title
+            new_posts[id] = {'title': c_title, 'link': self.generate_url(id)}
 
         return new_posts, changed_posts, finished_posts
 
-    def generate_url(self, index):
-        template_url = 'http://ara.kaist.ac.kr/board/Wanted/{}/?page_no=1'
-        return template_url.format(index)
+
 
 
 
@@ -89,7 +116,6 @@ class ParserARA(WebDriver):
 
         # Login to the site
         self.click_btn(path_btn)
-        # self.screenshot('login.png')
 
     def get_table(self):
         path_table = '//*[@id="board_content"]/table'
@@ -107,12 +133,15 @@ if __name__ == '__main__':
     # table = parser.get_table()[0]
 
     monitor = MonitorARA()
+    pusher = KakaoPusher()
+    pusher.login()
     # Find new, changed, finished post test
-    """
+
     with pd.option_context('display.max_rows', None, 'display.max_columns',
                            None):
         table = monitor.get_table()
         table = table.drop(table.index[[0,1,2,3,4,5,6,7,8]])
+        print(table)
         old_table = table.drop([563752, 563762, 563779, 563783, 563794, 563798, 563809, 563818])
         old_table.at[563865, '제목'] = '슬라이드 제작 실험 || 2시간 소요 || 3만원 지급'
         old_table.at[563824, '제목'] = '[2시간, 2만원] 시선 추적 장치를 이용한 스마트 글래스 문자입력 실험... '
@@ -120,12 +149,26 @@ if __name__ == '__main__':
         # print(old_table)
         # print(table)
 
-        monitor.find_update(old_table, table)
+        new_posts, changed_posts, finished_posts = monitor.find_update(old_table, table)
+        print(new_posts)
+        print(changed_posts)
+        print(finished_posts)
     """
     while True:
         new_table = monitor.get_table()
         new_posts, changed_posts, finished_posts = monitor.find_update(monitor.p_table, new_table)
         monitor.set_p_table(new_table)
         monitor.save_table(new_table)
-        print(new_posts, changed_posts, finished_posts)
 
+        for id, data in new_posts.items():
+            request = ContentMaker.content_new(data['title'], data['link'])
+            pusher.push_msg(request)
+
+        for id, data in changed_posts.items():
+            request =ContentMaker.content_changed(data['p_title'], data['c_title'], data['link'])
+            pusher.push_msg(request)
+
+        for id, data in finished_posts.items():
+            request = ContentMaker.content_finished(data['title'], data['link'])
+            pusher.push_msg(request)
+    """
