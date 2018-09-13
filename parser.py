@@ -46,6 +46,28 @@ class WebDriver:
         self.driver = None
         self.start_driver()
 
+    def _retry(func):
+        def retried_func(*args, **kwargs):
+            MAX_TRIES = 2
+            tries = 1
+            while True:
+                try:
+                    resp = func(*args, **kwargs)
+                    return resp
+                except NoSuchElementException:
+                    raise NoSuchElementException
+                except:
+                    logger = logging.getLogger(__name__)
+                    error = "error is occured {} times @{}".format(str(tries), func.__name__)
+                    logger.error(error, exc_info=True)
+                    tries += 1
+                    # time.sleep(0.5)
+                    if tries > MAX_TRIES:
+                        raise
+                    continue
+
+        return retried_func
+
     def set_counter(self, MAX_COUNT=5):
         self.MAX_COUNT = MAX_COUNT
 
@@ -60,6 +82,7 @@ class WebDriver:
             self.count_reset += 1
         self.logger.info("end resetting driver")
 
+    @_retry
     def start_driver(self, **kwargs):
         self.logger.info("driver warming up")
 
@@ -103,27 +126,7 @@ class WebDriver:
         except:
             return -1
 
-    def _retry(func):
-        def retried_func(*args, **kwargs):
-            MAX_TRIES = 2
-            tries = 1
-            while True:
-                try:
-                    resp = func(*args, **kwargs)
-                    return resp
-                except NoSuchElementException:
-                    raise NoSuchElementException
-                except:
-                    logger = logging.getLogger(__name__)
-                    error = "error is occured {} times @{}".format(str(tries), func.__name__)
-                    logger.error(error, exc_info=True)
-                    tries += 1
-                    # time.sleep(0.5)
-                    if tries > MAX_TRIES:
-                        raise
-                    continue
 
-        return retried_func
 
     def is_visible(self, locator, timeout=1.0):
         try:
