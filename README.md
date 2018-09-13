@@ -6,3 +6,5 @@
 - [ ] Add telegram push notification
 - [ ] Add kakao chat - get list of recent list
 - [ ] Add kakao chat - post comment
+- [ ] Add portal monitoring 
+- [ ] Execute the push message function as subprocess
