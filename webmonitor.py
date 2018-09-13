@@ -15,21 +15,21 @@ class ContentMaker():
     @classmethod
     def content_new(self, title, link):
         request = dict()
-        request['content'] = '새 구인 글이 도착했어요! - [{}]'.format(title)
+        request['content'] = '새 구인 글이 도착했어요!\n-------------------\n{}'.format(title)
         request['link'] = link
         return request
 
     @classmethod
     def content_changed(self, p_title, c_title, link):
         request = dict()
-        request['content'] = '글이 수정됐어요! - [{}] -> [{}]'.format(p_title, c_title)
+        request['content'] = '글이 수정됐어요!\n---------------\n{} \n-> {}'.format(p_title, c_title)
         request['link'] = link
         return request
 
     @classmethod
     def content_finished(self, title, link):
         request = dict()
-        request['content'] = '구인이 마감됐어요! - [{}]'.format(title, link)
+        request['content'] = '구인이 마감됐어요!\n-----------------\n{}'.format(title, link)
         request['link'] = link
         return request
 
@@ -142,9 +142,10 @@ if __name__ == '__main__':
         table = monitor.get_table()
         table = table.drop(table.index[[0,1,2,3,4,5,6,7,8]])
         print(table)
-        old_table = table.drop([563752, 563762, 563779, 563783, 563794, 563798, 563809, 563818])
-        old_table.at[563865, '제목'] = '슬라이드 제작 실험 || 2시간 소요 || 3만원 지급'
-        old_table.at[563824, '제목'] = '[2시간, 2만원] 시선 추적 장치를 이용한 스마트 글래스 문자입력 실험... '
+        index = table.index.values
+        old_table = table.drop(index[:3])
+        old_table.at[index[1], '제목'] = '슬라이드 제작 실험 || 2시간 소요 || 3만원 지급'
+        table.at[index[3], '제목'] = '마감 [2시간, 2만원] 시선 추적 장치를 이용한 스마트 글래스 문자입력 실험... '
 
         # print(old_table)
         # print(table)
@@ -153,22 +154,25 @@ if __name__ == '__main__':
         print(new_posts)
         print(changed_posts)
         print(finished_posts)
-    """
+        """
     while True:
         new_table = monitor.get_table()
         new_posts, changed_posts, finished_posts = monitor.find_update(monitor.p_table, new_table)
         monitor.set_p_table(new_table)
         monitor.save_table(new_table)
-
+        """
         for id, data in new_posts.items():
             request = ContentMaker.content_new(data['title'], data['link'])
+            print(request)
             pusher.push_msg(request)
 
         for id, data in changed_posts.items():
             request =ContentMaker.content_changed(data['p_title'], data['c_title'], data['link'])
+            print(request)
             pusher.push_msg(request)
 
         for id, data in finished_posts.items():
             request = ContentMaker.content_finished(data['title'], data['link'])
+            print(request)
             pusher.push_msg(request)
-    """
+

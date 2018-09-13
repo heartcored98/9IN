@@ -62,11 +62,13 @@ class KakaoPusher(WebDriver):
             path_url = '//*[@id="linkUpload"]'
 
             self.click_btn(path_link)
+            self.is_visible(path_link)
             element_name = self.driver.find_element_by_xpath(path_name)
             element_name.send_keys(name)
 
             self.click_btn(path_url)
             element_url = self.driver.find_element_by_xpath(path_url)
+            element_url.clear()
             element_url.send_keys(link)
 
         # Send Msg
