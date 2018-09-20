@@ -127,7 +127,8 @@ class MonitorARA():
         new_posts = dict()
         for id in set_new_posts:
             c_title = c_table.loc[[id]]['제목'].values[0]
-            new_posts[id] = {'title': c_title, 'link': self.generate_url(id)}
+            if not '카풀' in c_title:
+                new_posts[id] = {'title': c_title, 'link': self.generate_url(id)}
 
         return new_posts, changed_posts, finished_posts
 
