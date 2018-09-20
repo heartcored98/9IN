@@ -26,35 +26,49 @@ def kill_chrome():
     return_value = subprocess.call(cmd, shell=True)
     return return_value
 
+################################################################################
+####################### Push Notification Content Maker ########################
+################################################################################
+
 class ContentMaker():
 
     @classmethod
     def content_new(self, title, link):
         request = dict()
-        request['content'] = '새 구인 글이 도착했어요!\n----------------------\n{}'.format(title)
+        request['content'] = '[새글]-{}'.format(title)
         request['link'] = link
         return request
 
     @classmethod
     def content_changed(self, p_title, c_title, link):
         request = dict()
-        request['content'] = '글이 수정됐어요!\n------------------\n{} \n-> {}'.format(p_title, c_title)
+        request['content'] = '[변경]-{} \n-> {}'.format(p_title, c_title)
         request['link'] = link
         return request
 
     @classmethod
     def content_finished(self, title, link):
         request = dict()
-        request['content'] = '구인이 마감됐어요!\n-----------------\n{}'.format(title, link)
+        request['content'] = '[마감]-{}'.format(title, link)
         request['link'] = link
         return request
+
+
+################################################################################
+############################# Monitor Web Posts ################################
+################################################################################
+
 
 class MonitorARA():
     def __init__(self):
         self.target_url = settings.URL_ARA
         self.table_parser = HTMLTableParser()
         self.path_data_ara = settings.PATH_DATA_ARA
-        self.p_table = self.load_table()
+        self.p_table = self.get_table() # update with latest post list
+
+    def generate_url(self, index):
+        template_url = 'http://ara.kaist.ac.kr/board/Wanted/{}/?page_no=1'
+        return template_url.format(index)
 
     def load_table(self):
         if os.path.isfile(self.path_data_ara):
@@ -70,13 +84,19 @@ class MonitorARA():
         if len(table) > 15:
             table.to_csv(self.path_data_ara)
 
-    def set_p_table(self, table):
+    def update_p_table(self, table):
         if len(table) > 15:
-            self.p_table = table
+            set_old_index = set(self.p_table.index.values)
+            for idx in set_old_index:
+                try:
+                    table = table.drop(index=[idx])
+                except:
+                    pass
+            table = table.append(self.p_table)
 
-    def generate_url(self, index):
-        template_url = 'http://ara.kaist.ac.kr/board/Wanted/{}/?page_no=1'
-        return template_url.format(index)
+
+            table = table.iloc[:min(len(table), 30)]
+            self.p_table = table
 
     def get_table(self):
         while True:
@@ -110,10 +130,6 @@ class MonitorARA():
             new_posts[id] = {'title': c_title, 'link': self.generate_url(id)}
 
         return new_posts, changed_posts, finished_posts
-
-
-
-
 
 
 
@@ -153,7 +169,7 @@ if __name__ == '__main__':
     # table = parser.get_table()[0]
 
     monitor = MonitorARA()
-    print(monitor.p_table)
+    logger.info(monitor.p_table)
     # Find new, changed, finished post test
 
     with pd.option_context('display.max_rows', None, 'display.max_columns',
@@ -181,28 +197,29 @@ if __name__ == '__main__':
             time.sleep(0.3)
             new_table = monitor.get_table()
             new_posts, changed_posts, finished_posts = monitor.find_update(monitor.p_table, new_table)
-            monitor.set_p_table(new_table)
-            monitor.save_table(new_table)
+            monitor.update_p_table(new_table)
+            # monitor.save_table(new_table)
 
             for id, data in new_posts.items():
                 request = ContentMaker.content_new(data['title'], data['link'])
                 print(request)
-                KakaoPusher(request)
-                kill_chrome()
+                # KakaoPusher(request)
+                # kill_chrome()
 
             for id, data in changed_posts.items():
                 request =ContentMaker.content_changed(data['p_title'], data['c_title'], data['link'])
                 print(request)
-                KakaoPusher(request)
-                kill_chrome()
+                # KakaoPusher(request)
+                # kill_chrome()
 
             for id, data in finished_posts.items():
                 request = ContentMaker.content_finished(data['title'], data['link'])
                 print(request)
-                KakaoPusher(request)
-                kill_chrome()
+                # KakaoPusher(request)
+                # kill_chrome()
 
             cnt += 1
             if cnt > 10:
-                logger.info('10 connection tried')
+                logger.info('100 connection tried')
                 cnt = 0
+
