@@ -22,7 +22,7 @@ class Objdict(dict):
             raise AttributeError("No such attribute: " + name)
 
 
-def load_yml_config(filename='settings.yml'):
+def load_yml_config(filename='/home/ubuntu/guin/settings.yml'):
     with open(filename, 'r') as stream:
         try:
             return Objdict(yaml.load(stream))

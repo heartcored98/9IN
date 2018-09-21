@@ -1,0 +1,10 @@
+[Unit]
+Description=RPC service at port 57777
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/home/ubuntu/guin/env_guin/bin/python /home/ubuntu/guin/run_monitoring.py
+
+[Install]
+WantedBy=multi-user.target
