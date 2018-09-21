@@ -2,6 +2,7 @@ import logging
 
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+import telegram
 
 from parser import WebDriver
 from utils import load_yml_config
@@ -10,6 +11,72 @@ from utils import load_yml_config
 settings = load_yml_config()
 logger = logging.getLogger(__name__)
 
+NEW = 0
+UPDATE = 1
+FINISHED = 2
+
+################################################################################
+######################### TELEGRAM Push Notification ###########################
+################################################################################
+
+
+class TelegramPusher():
+    def __init__(self):
+        self.bot = telegram.Bot(token=settings.TELEGRAM_TOKEN)
+        self.channel_id = settings.TELEGRAM_CHANNEL
+
+    def send_message(self, content):
+        self.bot.sendMessage(chat_id='@{}'.format(self.channel_id), text=content)
+
+    def generate_content(self, request, mode):
+        if mode == NEW:
+            template = "[새글]-{} \n -----------------------{}"
+            content = template.format(
+                request['title'],
+                request['link']
+            )
+        elif mode == UPDATE:
+            template = "[변경]-{} \n-> {} \n -----------------------{}"
+            content = template.format(
+                request['p_title'],
+                request['c_title'],
+                request['link']
+            )
+        elif mode == FINISHED:
+            template = "[마감]-{} \n -----------------------{}"
+            content = template.format(
+                request['title'],
+                request['link']
+            )
+        return content
+
+
+################################################################################
+########################### KAKAO Push Notification ############################
+################################################################################
+
+class KakaoContentMaker():
+
+    @classmethod
+    def content_new(self, title, link):
+        request = dict()
+        request['content'] = '[새글]-{}'.format(title)
+        request['link'] = link
+        return request
+
+    @classmethod
+    def content_changed(self, p_title, c_title, link):
+        request = dict()
+        request['content'] = '[변경]-{} \n-> {}'.format(p_title, c_title)
+        request['link'] = link
+        return request
+
+    @classmethod
+    def content_finished(self, title, link):
+        request = dict()
+        request['content'] = '[마감]-{}'.format(title, link)
+        request['link'] = link
+        return request
 
 class KakaoPusher(WebDriver):
     def __init__(self, request):
@@ -43,7 +110,7 @@ class KakaoPusher(WebDriver):
         logger.debug('Connect to message feed page')
 
 
-    def push_msg(self, request):
+    def send_message(self, request):
         # Enable when full size screenshot is needed
         self.driver.set_window_size(1920, 1920)
         logger.info('Sending message...')
@@ -110,8 +177,15 @@ class KakaoPusher(WebDriver):
 
 
 if __name__ == '__main__':
-
-    pusher = KakaoPusher()
-    pusher.login()
     request = {'content':'테스트 메시지2', 'link':'http://ara.kaist.ac.kr/board/Wanted/563979/?page_no=1'}
-    pusher.push_msg(request)
+
+    """
+    kakao_pusher = KakaoPusher()
+    kakao_pusher.login()
+    request = {'content':'테스트 메시지2', 'link':'http://ara.kaist.ac.kr/board/Wanted/563979/?page_no=1'}
+    kakao_pusher.send_message(request)
+    
+    content = "[새글]-{} \n -----------------------{}".format(request['content'], request['link'])
+    telegram_pusher = TelegramPusher()
+    telegram_pusher.bot.sendMessage(chat_id='@kaist9in', text=content)
+    """
