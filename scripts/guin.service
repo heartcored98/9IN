@@ -1,3 +1,5 @@
+# TODO write how to register service into systemd
+
 [Unit]
 Description=RPC service at port 57777
 After=multi-user.target
