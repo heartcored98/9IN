@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 # Install chrome driver from the source
 # Check this link : https://askubuntu.com/questions/1004947/how-do-i-use-the-chrome-driver-in-ubuntu-16-04

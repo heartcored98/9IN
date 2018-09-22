@@ -27,6 +27,7 @@ def kill_chrome():
 class MonitorARA():
     def __init__(self):
         self.target_url = settings.URL_ARA
+        self.stopwords = settings.STOP_WORDS
         self.table_parser = HTMLTableParser()
         self.path_data_ara = settings.PATH_DATA_ARA
         self.p_table = self.get_table() # update with latest post list
@@ -34,6 +35,13 @@ class MonitorARA():
     def generate_url(self, index):
         template_url = 'http://ara.kaist.ac.kr/board/Wanted/{}/?page_no=1'
         return template_url.format(index)
+
+    def is_stopwords(self, text):
+        flag = False
+        for stopword in self.stopwords:
+            if stopword in text:
+                flag = True
+        return flag
 
     def load_table(self):
         if os.path.isfile(self.path_data_ara):
@@ -93,7 +101,7 @@ class MonitorARA():
         new_posts = dict()
         for id in set_new_posts:
             c_title = c_table.loc[[id]]['제목'].values[0]
-            if not '카풀' in c_title:
+            if not self.is_stopwords(c_title):
                 new_posts[id] = {'title': c_title, 'link': self.generate_url(id)}
 
         return new_posts, changed_posts, finished_posts
