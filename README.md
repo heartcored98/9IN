@@ -5,6 +5,7 @@
 - [X] Fix delete post error
 - [X] Filtering carful articles
 - [X] Add telegram push notification
+- [ ] Add content preview
 - [ ] Add personal searching, filtering keyword on telegram bot
 - [ ] Add portal monitoring 
 - [ ] Execute the push message function as subprocess
