@@ -27,6 +27,7 @@
 - linux_chromedriver (Mate of Selenium)
 - [python-telegram-bot](https://python-telegram-bot.org/) (Telegram Push Notification)
 - [ubuntu systemd](https://wiki.ubuntu.com/systemd)  (Automaitc Start & Restart)
+- [AWS Lightsail](https://aws.amazon.com/ko/lightsail/) (Low Cost Minimal Server)
 
 # TODO
 - [X] Fix delete post error
