@@ -18,7 +18,7 @@
 
 # TODO
 - [X] Fix delete post error
-- [X] Filtering carful articles
+- [X] Filtering carfull articles
 - [X] Add telegram push notification
 - [ ] Add content preview
 - [ ] Add personal searching, filtering keyword on telegram bot
