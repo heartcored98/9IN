@@ -35,6 +35,8 @@
 - [X] Fix delete post error
 - [X] Filtering carfull articles
 - [X] Add telegram push notification
+- [ ] Use MongoDB to save the result
+- [ ] Network error handling
 - [ ] Add content preview
 - [ ] Add personal searching, filtering keyword on telegram bot
 - [ ] Add portal monitoring 
