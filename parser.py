@@ -1,175 +1,65 @@
-#!/home/ubuntu/anaconda3/bin/python3
-
-# from pytz import timezone
-from datetime import date, datetime
-from multiprocessing import Pool
-import multiprocessing
-from multiprocessing.dummy import Pool as ThreadPool
-from multiprocessing import Manager
-from functools import partial
-import time
-import json
-import pprint
-import os, signal
-import logging
-
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.by import By
-import selenium.webdriver.support.expected_conditions as EC
-import selenium.webdriver.support.ui as ui
+import requests
+import pandas as pd
+from bs4 import BeautifulSoup
 
 
-FLAG_DEBUG = False
-CHROMEDRIVER_PATH = '/home/ubuntu/chromedriver'
+class HTMLTableParser:
 
+    def feed(self, html_string):
+        soup = BeautifulSoup(html_string, 'lxml')
+        return [self.parse_html_table(table) for table in soup.find_all('table')]
 
-class WebDriver:
-    """Wrapper Class of webdriver which has useful functionality
-    This class handle all the web browsing process with connecting to url,
-    clicking button on website, extracting text on websites. Also it has
-    its own retry decorator feature which enable auto-reconnection when
-    initial attempt get failed.
-    """
+    def parse_html_table(self, table):
+        n_columns = 0
+        n_rows = 0
+        column_names = []
 
-    def __init__(self, target_url, window=False):
-        self.logger = logging.getLogger(__name__)
+        # Find number of rows and columns
+        # we also find the column titles if we can
+        for row in table.find_all('tr'):
 
-        self.count_reset = 0
-        self.MAX_COUNT = 5
+            # Determine the number of rows in the table
+            td_tags = row.find_all('td')
+            if len(td_tags) > 0:
+                n_rows += 1
+                if n_columns == 0:
+                    # Set the number of columns for our table
+                    n_columns = len(td_tags)
 
-        self.target_url = target_url
-        self.PATH_SCREENSHOT_DIR = './screenshot'
-        self.window = window
-        self.driver = None
-        self.start_driver()
+            # Handle column names if we find them
+            th_tags = row.find_all('th')
+            if len(th_tags) > 0 and len(column_names) == 0:
+                for th in th_tags:
+                    column_names.append(th.get_text())
 
-    def _retry(func):
-        def retried_func(*args, **kwargs):
-            MAX_TRIES = 2
-            tries = 1
-            while True:
-                try:
-                    resp = func(*args, **kwargs)
-                    return resp
-                except NoSuchElementException:
-                    raise NoSuchElementException
-                except:
-                    logger = logging.getLogger(__name__)
-                    error = "error is occured {} times @{}".format(str(tries), func.__name__)
-                    logger.error(error, exc_info=True)
-                    tries += 1
-                    # time.sleep(0.5)
-                    if tries > MAX_TRIES:
-                        raise
-                    continue
+        # Safeguard on Column Titles
+        if len(column_names) > 0 and len(column_names) != n_columns:
+            raise Exception("Column titles do not match the number of columns")
 
-        return retried_func
+        columns = column_names if len(column_names) > 0 else range(0, n_columns)
+        df = pd.DataFrame(columns=range(len(column_names)), index=range(0, n_rows))
+        row_marker = 0
+        for row in table.find_all('tr'):
+            column_marker = 0
+            columns = row.find_all('td')
 
-    def set_counter(self, MAX_COUNT=5):
-        self.MAX_COUNT = MAX_COUNT
+            for column in columns:
+                df.iat[row_marker, column_marker] = " ".join(column.get_text().split())
+                column_marker += 1
+            if len(columns) > 0:
+                row_marker += 1
 
-    def reset_driver(self):
-        self.logger.info("start resetting driver")
-        if self.count_reset >= self.MAX_COUNT:
-            self.quit_driver()
-            # time.sleep(1)
-            self.start_driver()
-            self.count_reset = 0
-        else:
-            self.count_reset += 1
-        self.logger.info("end resetting driver")
+        new_header = dict()
+        for i, name in enumerate(column_names):
+            new_header[i] = name
+        new_header[0] = 'N'
+        new_header[1] = 'id'
+        df.rename(columns = new_header, inplace=True)
 
-    @_retry
-    def start_driver(self, **kwargs):
-        self.logger.info("driver warming up")
-
-        try:
-            options = Options()
-            options.add_argument('--headless')
-            options.add_argument('--disable-gpu')
-            if not bool(kwargs):
-                self.driver = webdriver.Chrome(CHROMEDRIVER_PATH, chrome_options=options)
-            else:
-                self.driver = webdriver.Chrome(CHROMEDRIVER_PATH, chrome_options=options)
-            """
-            options = webdriver.ChromeOptions()
-            options.add_argument("headless")  # remove this line if you want to see the browser popup
-            self.driver = webdriver.Chrome(chrome_options=options, executable_path='/usr/bin/chromedriver')
-            """
-        except:
-            self.logger.critical("some error", exc_info=True)
-        self.driver.get(self.target_url)
-        self.logger.info("new driver generated")
-
-    def quit_driver(self):
-        try:
-            if self.driver is not None:
-                self.driver.service.process.send_signal(signal.SIGTERM)
-                self.driver.quit()
-                self.logger.info("driver terminated")
-
-        except:
-            self.logger.error('error in quit_driver', exc_info=True)
-
-    def screenshot(self, name="shoot.png"):
-        filename = "{}/{}".format(self.PATH_SCREENSHOT_DIR, name)
-        self.driver.save_screenshot(filename)
-
-
-    def get_pid(self):
-        try:
-            if self.driver is not None:
-                return self.driver.service.process.pid
-        except:
-            return -1
-
-
-
-    def is_visible(self, locator, timeout=1.0):
-        try:
-            ui.WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located((By.XPATH, locator)))
-            return True
-        except TimeoutException:
-            return False
-        except:
-            self.logger.error("error in is_visible", exc_info=True)
-            return False
-
-    @_retry
-    def get_text(self, path):
-        try:
-            if self.is_visible(path):
-                context = self.driver.find_element_by_xpath(path)
-                return context.text
-            else:
-                raise NoSuchElementException
-        except NoSuchElementException:
-            raise NoSuchElementException
-
-        except Exception:
-            self.logger.error("error in get text", exc_info=True)
-            raise
-
-
-    # @_retry
-    def click_btn(self, path, id=False, selector=False):
-        try:
-            if self.is_visible(path):
-                if id:
-                    btn = self.driver.find_element_by_id(path)
-                elif selector:
-                    btn = self.driver.find_element_by_selector(path)
-                else:
-                    btn = self.driver.find_element_by_xpath(path)
-                btn.click()
-            else:
-                raise NoSuchElementException
-        except NoSuchElementException:
-            print("No element")
-
-        except Exception:
-            self.logger.error("error in click_btn", exc_info=True)
-            raise
+        # Convert to float if possible
+        for col in df:
+            try:
+                df[col] = df[col].astype(int)
+            except ValueError:
+                pass
+        return df
