@@ -1,8 +1,7 @@
 import logging
 import time
 import telegram
-from utils import load_yml_config
-
+from s3_utils import *
 
 settings = load_yml_config()
 logger = logging.getLogger(__name__)
@@ -17,9 +16,9 @@ FINISHED = 2
 
 
 class TelegramPusher():
-    def __init__(self):
-        self.bot = telegram.Bot(token=settings.TELEGRAM_TOKEN)
-        self.channel_id = settings.TELEGRAM_CHANNEL
+    def __init__(self, token, channel_id):
+        self.bot = telegram.Bot(token=token)
+        self.channel_id = channel_id
 
     def _retry(func):
         def retried_func(*args, **kwargs):
@@ -50,33 +49,21 @@ class TelegramPusher():
             parse_mode='MARKDOWN'
         )
 
-    def generate_content(self, request, mode):
-        if mode == NEW:
-            template = "*[새글]*  \n[{}]({})"
-            content = template.format(
-                request['title'],
-                request['link']
-            )
-        elif mode == UPDATE:
-            template = "*[변경]*  \n*변경전:* {}  \n*변경후:* [{}]({})"
-            content = template.format(
-                request['p_title'],
-                request['c_title'],
-                request['link']
-            )
-        elif mode == FINISHED:
-            template = "*[마감]*  \n[{}]({})"
-            content = template.format(
-                request['title'],
-                request['link']
-            )
+    def generate_content(self, request):
+        template = "*[새글]*  \n[{}]({})"
+        content = template.format(
+            request['title'],
+            request['link']
+        )
         return content
 
 if __name__ == '__main__':
-    request = {'content':'테스트 메시지2', 'link':'http://ara.kaist.ac.kr/board/Wanted/563979/?page_no=1'}
+    request = {'title':'한글 모십니다', 'body':'일본어 가리쳐주실 분 구합니다..', 'link':'http://ara.kaist.ac.kr/board/Wanted/563979/?page_no=1'}
+    content = "*{}*\n{} \n[inline URL]({})".format(request['title'], request['body'], request['link'])
+    print(content)
 
-    content = "[새글]-{} \n -----------------------{}".format(request['content'], request['link'])
-    content = "*bold text*  \n_italic text_  \n[inline URL](http://www.example.com/)"
-
-    telegram_pusher = TelegramPusher()
-    telegram_pusher.bot.sendMessage(chat_id='@kaist9in', text=content, parse_mode='MARKDOWN')
+    token = settings.TEST_BOT_TOKEN
+    channel_id = settings.TEST_CHANNEL_URL
+    telegram_pusher = TelegramPusher(token, channel_id)
+    # print(telegram_pusher.bot.get_me())
+    telegram_pusher.bot.sendMessage(chat_id='@kaist9in_test', text=content, parse_mode='MARKDOWN', disable_web_page_preview=True)
