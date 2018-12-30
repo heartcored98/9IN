@@ -1,17 +1,7 @@
 import logging
-from s3_utils import *
 from post_parser import *
 from pusher import *
 
-
-settings = load_yml_config()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-ch.setFormatter(formatter)
-logger.addHandler(ch)
 
 def generate_content(new_posts, base_url):
     list_contents = []
@@ -24,7 +14,17 @@ def generate_content(new_posts, base_url):
     return list_contents
 
 
-if __name__ == '__main__':
+def ara_wanted_handler(event, context):
+    settings = load_yml_config()
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    TEST_MODE = event.get('TEST_MODE', True)
 
     logger.info("###########################################")
     logger.info("########## Start POST Monitoring ##########")
@@ -53,19 +53,22 @@ if __name__ == '__main__':
 
     new_posts = new_table.loc[new_ids, :]
     contents = generate_content(new_posts, base_url)
-    logger.info("Generate content message")
+    logger.info("Generate content message done!")
 
     # ===== Construct Telegram Bot ====== #
-    token = settings.TEST_BOT_TOKEN
-    channel_id = settings.TEST_CHANNEL_URL
-    telegram_pusher = TelegramPusher(token, channel_id)
+    telegram_pusher = get_telegram_pusher(test_mode=TEST_MODE)
+    logger.info("Construct telegram pusher done!")
 
+    message_ids = []
     for content in contents:
-        telegram_pusher.bot.sendMessage(chat_id=channel_id,
-                                        text=content,
-                                        parse_mode='MARKDOWN',
-                                        disable_web_page_preview=True)
+        resp = telegram_pusher.send_message(content)
+        try:
+            message_ids.append(resp.message_id)
+        except:
+            pass
+    logger.info("Message ids : {}".format(str(message_ids)))
+    logger.info("Pushed {}/{} successfully!".format(len(message_ids), len(contents)))
 
-    # print(prev_table)
 
-
+if __name__ == '__main__':
+    pass

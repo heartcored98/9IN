@@ -45,6 +45,8 @@ def upload_df(table, filepath):
 
 
 def download_df(filepath):
+    # Ref : https://stackoverflow.com/questions/38154040/save-dataframe-to-csv-directly-to-s3-python
+
     fs = get_s3fs()
     with fs.open(filepath, 'rb') as f:
         table_bytes = f.read()

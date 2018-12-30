@@ -14,6 +14,15 @@ FINISHED = 2
 ######################### TELEGRAM Push Notification ###########################
 ################################################################################
 
+def get_telegram_pusher(test_mode=True):
+    if test_mode:
+        token = settings.TEST_BOT_TOKEN
+        channel_id = settings.TEST_CHANNEL_URL
+    else:
+        token = settings.DEPLOY_BOT_TOKEN
+        channel_id = settings.DEPLOY_CHANNEL_URL
+    telegram_pusher = TelegramPusher(token, channel_id)
+    return telegram_pusher
 
 class TelegramPusher():
     def __init__(self, token, channel_id):
@@ -43,19 +52,14 @@ class TelegramPusher():
 
     @_retry
     def send_message(self, content):
-        self.bot.sendMessage(chat_id='@{}'.format(
-            self.channel_id),
+        resp = self.bot.sendMessage(
+            chat_id=self.channel_id,
             text=content,
-            parse_mode='MARKDOWN'
+            parse_mode='MARKDOWN',
+            disable_web_page_preview=True
         )
+        return resp
 
-    def generate_content(self, request):
-        template = "*[새글]*  \n[{}]({})"
-        content = template.format(
-            request['title'],
-            request['link']
-        )
-        return content
 
 if __name__ == '__main__':
     request = {'title':'한글 모십니다', 'body':'일본어 가리쳐주실 분 구합니다..', 'link':'http://ara.kaist.ac.kr/board/Wanted/563979/?page_no=1'}
