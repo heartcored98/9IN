@@ -1,0 +1,11 @@
+ACCESS_ID: "AKIAJYYVUR2URLJLZOJQ"
+ACCESS_KEY: "DzjnD30NJW4oOGVprrOyKnVlmYsTemtUopZFVQfl"
+REGION_NAME: "ap-northeast-2"
+
+FILE_NAME: "ara_wanted_posts.csv"
+
+DEBUG_MODE: False
+
+BUCKET_URL: "https://s3.ap-northeast-2.amazonaws.com"
+BUCKET_REJOIN: "ap-northeast-2"
+BUCKET_NAME: "guin-bucket"

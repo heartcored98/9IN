@@ -1,7 +1,6 @@
+from bs4 import BeautifulSoup
 import requests
 import pandas as pd
-from bs4 import BeautifulSoup
-
 
 class HTMLTableParser:
 
@@ -62,4 +61,19 @@ class HTMLTableParser:
                 df[col] = df[col].astype(int)
             except ValueError:
                 pass
+
         return df
+
+def get_ara_table(url='https://ara.kaist.ac.kr/board/Wanted/'):
+    html_string = requests.get(url).text
+    parser = HTMLTableParser()
+    table = parser.feed(html_string)[0]
+    table.index = table['id']
+    table = table.drop(columns=['N', '작성자', '말머리', '추천/조회', '글쓴날짜', 'id'])
+
+    table = table[~table['제목'].str.contains('카풀')]
+    return table
+
+
+if __name__ == '__main__':
+    print(get_ara_table())
