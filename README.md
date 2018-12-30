@@ -35,10 +35,4 @@
 - [X] Fix delete post error
 - [X] Filtering carfull articles
 - [X] Add telegram push notification
-- [ ] Investigate cause of the recent error
-- [ ] Use MongoDB to save the result
-- [ ] Network error handling
-- [ ] Add content preview
-- [ ] Add personal searching, filtering keyword on telegram bot
-- [ ] Add portal monitoring 
-- [ ] Execute the push message function as subprocess
+- [ ] Add preview
