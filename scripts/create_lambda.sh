@@ -3,6 +3,7 @@
 # Handling Lambda with Command line : https://hackernoon.com/exploring-the-aws-lambda-deployment-limits-9a8384b0bec3
 # AWS Lambda CLI Documentation : https://docs.aws.amazon.com/cli/latest/reference/lambda/update-function-configuration.html
 # AWS CloudWatch Rule : https://docs.amazonaws.cn/en_us/AmazonCloudWatch/latest/events/RunLambdaSchedule.html
+read -p 'Function Name: ' function_name
 
 cd ../
 cp packages.zip ori_packages.zip
@@ -11,7 +12,6 @@ mv packages.zip deploys.zip
 mv ori_packages.zip packages.zip
 aws s3 cp deploys.zip s3://guin-bucket/
 
-read -p 'Function Name: ' function_name
 aws lambda delete-function --function-name $function_name
 aws lambda create-function --function-name $function_name --runtime python3.6 --role arn:aws:iam::915999582461:role/role_guin --handler run_monitoring.ara_wanted_handler --region ap-northeast-2 --zip-file fileb://sample.zip
 aws lambda update-function-code --function-name $function_name --region ap-northeast-2 --s3-bucket guin-bucket --s3-key deploys.zip
