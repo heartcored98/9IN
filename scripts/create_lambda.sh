@@ -9,7 +9,7 @@ cp packages.zip ori_packages.zip
 zip -g packages.zip post_parser.py pusher.py run_monitoring.py s3_utils.py settings.yml
 mv packages.zip deploys.zip
 mv ori_packages.zip packages.zip
-#aws s3 cp deploys.zip s3://guin-bucket/
+aws s3 cp deploys.zip s3://guin-bucket/
 
 read -p 'Function Name: ' function_name
 aws lambda delete-function --function-name $function_name
@@ -17,7 +17,7 @@ aws lambda create-function --function-name $function_name --runtime python3.6 --
 aws lambda update-function-code --function-name $function_name --region ap-northeast-2 --s3-bucket guin-bucket --s3-key deploys.zip
 aws lambda update-function-configuration --function-name $function_name --region ap-northeast-2 --timeout 10 --memory-size 128
 
-#aws events put-rule --name 1min_trig schedule-expression 'rate(1 minute)'
+aws events put-rule --name 1min_trigger --schedule-expression 'rate(1 minute)'
 aws lambda add-permission \
 --function-name $function_name \
 --statement-id 1min-event \

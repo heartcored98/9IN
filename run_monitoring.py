@@ -15,14 +15,13 @@ def generate_content(new_posts, base_url):
 
 
 def ara_wanted_handler(event, context):
-    settings = load_yml_config()
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
+    # ch = logging.StreamHandler()
+    # ch.setLevel(logging.DEBUG)
+    # ch.setFormatter(formatter)
+    # logger.addHandler(ch)
 
     TEST_MODE = event.get('TEST_MODE', True)
 
@@ -69,6 +68,12 @@ def ara_wanted_handler(event, context):
     logger.info("Message ids : {}".format(str(message_ids)))
     logger.info("Pushed {}/{} successfully!".format(len(message_ids), len(contents)))
 
+    # ===== Upload current posts ====== #
+    logger.info("Uploading current posts...")
+    upload_df(new_table, filepath)
+    logger.info("Uploading current posts done! {} posts.".format(len(new_table)))
+
+
 
 if __name__ == '__main__':
-    pass
+    ara_wanted_handler({}, {})
