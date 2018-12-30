@@ -48,6 +48,8 @@ def ara_wanted_handler(event, context):
 
     # ===== Filtering new posts ====== #
     new_ids = list(set(new_table.index) - set(prev_table.index))
+    last_max_id = max(list(prev_table.index))
+    new_ids = [post_id for post_id in new_ids if post_id > last_max_id]
     logger.info("Find new post ids : {}. {} posts.".format(str(new_ids), len(new_ids)))
 
     new_posts = new_table.loc[new_ids, :]
