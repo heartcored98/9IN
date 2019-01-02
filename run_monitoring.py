@@ -1,7 +1,8 @@
 import logging
 from post_parser import *
 from pusher import *
-
+from os import listdir
+from os.path import isfile, join
 
 def generate_content(new_posts, base_url):
     list_contents = []
@@ -13,15 +14,32 @@ def generate_content(new_posts, base_url):
         list_contents.append(content)
     return list_contents
 
+def selenium_handler(event, context):
+
+
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
+    onlyfiles = [f for f in listdir('/var/task')]
+    logger.info("/var/task print")
+    logger.info(str(onlyfiles))
+
+    # logger.info("/var/task print")
+
+    logger.info("Start creating parser")
+    ara = ParserARA()
+    logger.info("parser created")
+    ara.login(settings.ARA_ID, settings.ARA_KEY)
+    logger.info("login successed")
+    ara.get_url('https://ara.kaist.ac.kr/board/Wanted/568746/?page_no=1')
+    logger.info("connect to post success")
+    print(ara.get_source())
+    logger.info(ara.get_source())
+    logger.info("hanlder done")
 
 def ara_wanted_handler(event, context):
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')
-    # ch = logging.StreamHandler()
-    # ch.setLevel(logging.DEBUG)
-    # ch.setFormatter(formatter)
-    # logger.addHandler(ch)
 
     TEST_MODE = event.get('TEST_MODE', True)
 
@@ -81,4 +99,5 @@ def ara_wanted_handler(event, context):
 
 
 if __name__ == '__main__':
-    ara_wanted_handler({}, {})
+    # ara_wanted_handler({}, {})
+    selenium_handler({}, {})
