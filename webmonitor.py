@@ -16,10 +16,6 @@ import selenium.webdriver.support.expected_conditions as EC
 import selenium.webdriver.support.ui as ui
 
 
-FLAG_DEBUG = False
-CHROMEDRIVER_PATH = '/var/task/chromedriver' #'./chromedriver'
-
-
 class WebDriver:
     """Wrapper Class of webdriver which has useful functionality
     This class handle all the web browsing process with connecting to url,

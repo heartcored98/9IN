@@ -3,6 +3,7 @@ from post_parser import *
 from pusher import *
 from os import listdir
 from os.path import isfile, join
+from s3_utils import *
 
 def generate_content(new_posts, base_url):
     list_contents = []
@@ -14,28 +15,15 @@ def generate_content(new_posts, base_url):
         list_contents.append(content)
     return list_contents
 
-def selenium_handler(event, context):
 
+def generate_payload(new_posts, base_url):
+    list_posts = []
+    for id, value in new_posts.to_dict('index').items():
+        url = base_url.format(id)
+        title = value['제목']
+        list_posts.append({'url':url, 'title':title})
+    return list_posts
 
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-
-    onlyfiles = [f for f in listdir('/var/task')]
-    logger.info("/var/task print")
-    logger.info(str(onlyfiles))
-
-    # logger.info("/var/task print")
-
-    logger.info("Start creating parser")
-    ara = ParserARA()
-    logger.info("parser created")
-    ara.login(settings.ARA_ID, settings.ARA_KEY)
-    logger.info("login successed")
-    ara.get_url('https://ara.kaist.ac.kr/board/Wanted/568746/?page_no=1')
-    logger.info("connect to post success")
-    print(ara.get_source())
-    logger.info(ara.get_source())
-    logger.info("hanlder done")
 
 def ara_wanted_handler(event, context):
     logger = logging.getLogger(__name__)
@@ -74,22 +62,11 @@ def ara_wanted_handler(event, context):
         logger.info("No post is found")
 
     new_posts = new_table.loc[new_ids, :]
-    contents = generate_content(new_posts, base_url)
-    logger.info("Generate content message done!")
+    payload = generate_payload(new_posts, base_url)
+    logger.info("Generate payload done!")
 
-    # ===== Construct Telegram Bot ====== #
-    telegram_pusher = get_telegram_pusher(test_mode=TEST_MODE)
-    logger.info("Construct telegram pusher done!")
-
-    message_ids = []
-    for content in contents:
-        resp = telegram_pusher.send_message(content)
-        try:
-            message_ids.append(resp.message_id)
-        except:
-            pass
-    logger.info("Message ids : {}".format(str(message_ids)))
-    logger.info("Pushed {}/{} successfully!".format(len(message_ids), len(contents)))
+    # ===== Invoke Article Parsing Lambda Fuction ===== #
+    invoke_event('test_sele', payload)
 
     # ===== Upload current posts ====== #
     logger.info("Uploading current posts...")
@@ -99,5 +76,5 @@ def ara_wanted_handler(event, context):
 
 
 if __name__ == '__main__':
-    # ara_wanted_handler({}, {})
-    selenium_handler({}, {})
+    ara_wanted_handler({}, {})
+    # selenium_handler({}, {})

@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
-from webmonitor import WebDriver
 from s3_utils import load_yml_config
 
 class HTMLTableParser:
@@ -79,37 +78,7 @@ def get_ara_table(url='https://ara.kaist.ac.kr/board/Wanted/', test_mode=False):
     return table
 
 
-class ParserARA(WebDriver):
-    def __init__(self):
-        self.target_url = 'https://ara.kaist.ac.kr/board/Wanted/'
-        WebDriver.__init__(self, target_url=self.target_url)
-
-    def login(self, id, key):
-        path_id = '//*[@id="miniLoginID"]'
-        path_pw = '//*[@id="miniLoginPassword"]'
-        path_btn = '//*[@id="loginBox"]/dd/form/ul/li[3]/a[1]'
-
-        input_id = self.driver.find_element_by_xpath(path_id)
-        input_id.send_keys(id)
-
-        input_pw = self.driver.find_element_by_xpath(path_pw)
-        input_pw.send_keys(key)
-
-        # Login to the site
-        self.click_btn(path_btn)
-
-    def get_table(self):
-        path_table = '//*[@id="board_content"]/table'
-        table = self.driver.find_element_by_xpath(path_table)
-        html_string = table.get_attribute('innerHTML')
-        html_string = self.driver.page_source
-        tables = self.table_parser.parse_html(html_string)
-        return tables
 
 if __name__ == '__main__':
     settings = load_yml_config()
-    ara = ParserARA()
-    ara.login(settings.ARA_ID, settings.ARA_KEY)
-    ara.get_url('https://ara.kaist.ac.kr/board/Wanted/568746/?page_no=1')
-    print(ara.get_source())
-    # print(get_ara_table())
+    print(get_ara_table())

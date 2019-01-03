@@ -1,32 +1,78 @@
 from selenium import webdriver
 import os
 import time
+from webmonitor import WebDriver
+from s3_utils import load_yml_config
+from bs4 import BeautifulSoup
 
 
-def article_handler(evert, context):
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--window-size=1280x1696')
-    chrome_options.add_argument('--user-data-dir=/tmp/user-data')
-    chrome_options.add_argument('--hide-scrollbars')
-    chrome_options.add_argument('--enable-logging')
-    chrome_options.add_argument('--log-level=0')
-    chrome_options.add_argument('--v=99')
-    chrome_options.add_argument('--single-process')
-    chrome_options.add_argument('--data-path=/tmp/data-path')
-    chrome_options.add_argument('--ignore-certificate-errors')
-    chrome_options.add_argument('--homedir=/tmp')
-    chrome_options.add_argument('--disk-cache-dir=/tmp/cache-dir')
-    chrome_options.add_argument('user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
-    chrome_options.binary_location = os.getcwd() + "/headless-chromium"
 
-    driver = webdriver.Chrome(chrome_options=chrome_options)
-    driver.get('https://ara.kaist.ac.kr/board/Wanted/')
-    time.sleep(1)
-    print(driver.page_source)
-    return driver.page_source
+
+class ParserARA(WebDriver):
+    def __init__(self):
+        self.target_url = 'https://ara.kaist.ac.kr/board/Wanted/'
+        WebDriver.__init__(self, target_url=self.target_url)
+
+    def login(self, id, key):
+        path_id = '//*[@id="miniLoginID"]'
+        path_pw = '//*[@id="miniLoginPassword"]'
+        path_btn = '//*[@id="loginBox"]/dd/form/ul/li[3]/a[1]'
+
+        input_id = self.driver.find_element_by_xpath(path_id)
+        input_id.send_keys(id)
+
+        input_pw = self.driver.find_element_by_xpath(path_pw)
+        input_pw.send_keys(key)
+
+        # Login to the site
+        self.click_btn(path_btn)
+
+    def get_article(self, url):
+        self.get_url(url)
+        html = self.get_source()
+        start_idx = html.find('<div class="article "')
+        end_idx = html.find('</div>', start_idx)
+        html = html[start_idx+23:end_idx].replace('<br />', '').replace('\n', ' ')
+        html = ' '.join(html.split())
+        html = html.strip()
+        article = BeautifulSoup(html, 'lxml')
+        return article.text
+
+
+
+
+def article_handler(event, context):
+    settings = load_yml_config()
+    ara_id = settings.ARA_ID
+    ara_key = settings.ARA_KEY
+    posts = event.get('posts', [])
+
+    ara = ParserARA()
+    ara.login(ara_id, ara_key)
+
+    for post in posts:
+        url = post['url']
+        title = post['title']
+        body = ara.get_article('https://ara.kaist.ac.kr/board/Wanted/568788')
+    print(body)
+    # print(ara.get_source())
+
+
+    # ===== Construct Telegram Bot ====== #
+    telegram_pusher = get_telegram_pusher(test_mode=TEST_MODE)
+    logger.info("Construct telegram pusher done!")
+
+    message_ids = []
+    for content in contents:
+        resp = telegram_pusher.send_message(content)
+        try:
+            message_ids.append(resp.message_id)
+        except:
+            pass
+    logger.info("Message ids : {}".format(str(message_ids)))
+    logger.info("Pushed {}/{} successfully!".format(len(message_ids), len(contents)))
+
+
 
 if __name__ == '__main__':
     article_handler(None, None)
