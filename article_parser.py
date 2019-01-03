@@ -12,7 +12,7 @@ from webmonitor import WebDriver
 
 
 def generate_content(title, body, url):
-    content = "*{}*\n{} \n[자세히보기>]({})".format(title, body, url)
+    content = "*[{}]*\n{} \n[자세히보기>]({})".format(title, body, url)
     return content
 
 
@@ -56,6 +56,7 @@ def article_handler(event, context):
     settings = load_yml_config()
     ara_id = settings.ARA_ID
     ara_key = settings.ARA_KEY
+    MAX_LEN = settings.MAX_LEN
     posts = event.get('posts', [])
 
     ara = ParserARA()
@@ -72,6 +73,8 @@ def article_handler(event, context):
         body = ara.get_article(url)
         if isinstance(body, str):
             if len(body) > 0:
+                if len(body) > MAX_LEN:
+                    body = body[:MAX_LEN] + '...'
                 content = generate_content(title, body, url)
                 resp = telegram_pusher.send_message(content)
                 try:
