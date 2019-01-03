@@ -1,19 +1,11 @@
 import logging
 from post_parser import *
-from pusher import *
 from os import listdir
 from os.path import isfile, join
 from s3_utils import *
+from utils import load_yml_config
 
-def generate_content(new_posts, base_url):
-    list_contents = []
-    for id, value in new_posts.to_dict('index').items():
-        url = base_url.format(id)
-        title = value['제목']
-        body = value.get('body', '')
-        content = "*{}*\n{} \n[바로가기>]({})".format(title, body, url)
-        list_contents.append(content)
-    return list_contents
+
 
 
 def generate_payload(new_posts, base_url):
@@ -22,14 +14,13 @@ def generate_payload(new_posts, base_url):
         url = base_url.format(id)
         title = value['제목']
         list_posts.append({'url':url, 'title':title})
-    return list_posts
+    return {'posts':list_posts}
 
 
 def ara_wanted_handler(event, context):
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
-    TEST_MODE = event.get('TEST_MODE', True)
 
     logger.info("###########################################")
     logger.info("########## Start POST Monitoring ##########")
@@ -63,6 +54,7 @@ def ara_wanted_handler(event, context):
 
     new_posts = new_table.loc[new_ids, :]
     payload = generate_payload(new_posts, base_url)
+    payload.update(event)
     logger.info("Generate payload done!")
 
     # ===== Invoke Article Parsing Lambda Fuction ===== #

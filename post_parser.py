@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
-from s3_utils import load_yml_config
+from utils import load_yml_config
 
 class HTMLTableParser:
 

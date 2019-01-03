@@ -1,7 +1,7 @@
 import logging
 import time
 import telegram
-from s3_utils import *
+from utils import load_yml_config
 
 settings = load_yml_config()
 logger = logging.getLogger(__name__)

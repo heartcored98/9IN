@@ -7,7 +7,7 @@ read -p 'Function Name: ' function_name
 
 cd ../
 cp packages.zip ori_packages.zip
-zip -g packages.zip post_parser.py pusher.py run_monitoring.py s3_utils.py settings.yml
+zip -g packages.zip post_parser.py pusher.py run_monitoring.py s3_utils.py utils.py settings.yml
 mv packages.zip deploys.zip
 mv ori_packages.zip packages.zip
 aws s3 cp deploys.zip s3://guin-bucket/

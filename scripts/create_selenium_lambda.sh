@@ -32,7 +32,7 @@ cd ../
 
 
 cp packages_sele.zip ori_packages_sele.zip
-zip -g packages_sele.zip article_parser.py settings.yml chromedriver headless-chromium
+zip -g packages_sele.zip article_parser.py pusher.py webmonitor.py s3_utils.py utils.py settings.yml chromedriver headless-chromium
 mv packages_sele.zip deploys_selenium.zip
 mv ori_packages_sele.zip packages_sele.zip
 aws s3 cp deploys_selenium.zip s3://guin-bucket/
