@@ -49,16 +49,19 @@ def ara_wanted_handler(event, context):
     new_ids = [post_id for post_id in new_ids if post_id > last_max_id]
     if len(new_ids) > 0:
         logger.info("Find new post ids : {}. {} posts.".format(str(new_ids), len(new_ids)))
+        new_posts = new_table.loc[new_ids, :]
+        payload = generate_payload(new_posts, base_url)
+        payload.update(event)
+        logger.info("Generate payload done!")
+
+        # ===== Invoke Article Parsing Lambda Fuction ===== #
+        invoke_event('test_sele', payload)
+        logger.info("Invoked lambda_selenium!")
+
     else:
         logger.info("No post is found")
 
-    new_posts = new_table.loc[new_ids, :]
-    payload = generate_payload(new_posts, base_url)
-    payload.update(event)
-    logger.info("Generate payload done!")
 
-    # ===== Invoke Article Parsing Lambda Fuction ===== #
-    invoke_event('test_sele', payload)
 
     # ===== Upload current posts ====== #
     logger.info("Uploading current posts...")
