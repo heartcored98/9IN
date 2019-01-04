@@ -6,8 +6,6 @@ from s3_utils import *
 from utils import load_yml_config
 
 
-
-
 def generate_payload(new_posts, base_url):
     list_posts = []
     for id, value in new_posts.to_dict('index').items():
@@ -20,7 +18,6 @@ def generate_payload(new_posts, base_url):
 def ara_wanted_handler(event, context):
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
-
 
     logger.info("###########################################")
     logger.info("########## Start POST Monitoring ##########")
@@ -36,7 +33,8 @@ def ara_wanted_handler(event, context):
     # ===== Download previous posts ====== #
     logger.info("Downloading previous posts...")
     prev_table = download_df(filepath)
-    logger.info("Downloading previous posts done! {} posts.".format(len(prev_table)))
+    last_id = prev_table.index[0]
+    logger.info("Downloading previous posts done! {} posts. Last id={}".format(len(prev_table), last_id))
 
     # ===== Fetching current posts ====== #
     logger.info("Fetching current posts...")
@@ -57,11 +55,8 @@ def ara_wanted_handler(event, context):
         # ===== Invoke Article Parsing Lambda Fuction ===== #
         invoke_event('test_sele', payload)
         logger.info("Invoked lambda_selenium!")
-
     else:
         logger.info("No post is found")
-
-
 
     # ===== Upload current posts ====== #
     logger.info("Uploading current posts...")
@@ -69,7 +64,5 @@ def ara_wanted_handler(event, context):
     logger.info("Uploading current posts done! {} posts.".format(len(new_table)))
 
 
-
 if __name__ == '__main__':
     ara_wanted_handler({}, {})
-    # selenium_handler({}, {})
