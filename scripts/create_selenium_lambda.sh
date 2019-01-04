@@ -13,7 +13,7 @@
 # Docker deb link : https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.09.0~3-0~ubuntu-xenial_amd64.deb
 # Docker-compose install link : https://stackoverflow.com/questions/36685980/docker-is-installed-but-docker-compose-is-not-why
 
-read -p 'Function Name: ' function_name
+read -e -p 'Function Name: ' -i "test_sele" function_name
 
 cd ../
 
@@ -42,19 +42,9 @@ aws lambda create-function --function-name $function_name --runtime python3.6 --
 
 aws lambda update-function-code --function-name $function_name --region ap-northeast-2 --s3-bucket guin-bucket --s3-key deploys_selenium.zip
 aws lambda update-function-configuration --function-name $function_name \
---environment Variables={PATH=/var/task/bin:/var/task/,PYTHONPATH=/var/task/src:/var/task/lib} \
 --region ap-northeast-2 \
 --timeout 16 \
---memory-size 500
-
-
-aws events put-rule --name 1min_trigger_sele --schedule-expression 'rate(1 minute)'
-aws lambda add-permission \
---function-name $function_name \
---statement-id 1min-event_sele \
---action 'lambda:InvokeFunction' \
---principal events.amazonaws.com \
---source-arn arn:aws:events:ap-northeast-2:915999582461:rule/1min_trigger_sele
-
+--memory-size 500 \
+--environment Variables="{PATH=/var/task/bin:/var/task/,PYTHONPATH=/var/task/src:/var/task/lib}"
 
 

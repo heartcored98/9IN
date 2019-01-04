@@ -66,13 +66,19 @@ class HTMLTableParser:
         return df
 
 def get_ara_table(url='https://ara.kaist.ac.kr/board/Wanted/', test_mode=False):
+
+    settings = load_yml_config()
+    STOP_WORDS = settings.STOP_WORDS
     html_string = requests.get(url).text
     parser = HTMLTableParser()
     table = parser.feed(html_string)[0]
     table.index = table['id']
     table = table.drop(columns=['N', '작성자', '말머리', '추천/조회', '글쓴날짜', 'id'])
 
-    table = table[~table['제목'].str.contains('카풀')]
+    # ===== Filtering Post with Stop words
+    for stopword in STOP_WORDS:
+        table = table[~table['제목'].str.contains(stopword)]
+
     if not test_mode:
         table = table[~table['제목'].str.contains('TEST')]
     return table

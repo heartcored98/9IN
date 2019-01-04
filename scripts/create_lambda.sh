@@ -3,7 +3,7 @@
 # Handling Lambda with Command line : https://hackernoon.com/exploring-the-aws-lambda-deployment-limits-9a8384b0bec3
 # AWS Lambda CLI Documentation : https://docs.aws.amazon.com/cli/latest/reference/lambda/update-function-configuration.html
 # AWS CloudWatch Rule : https://docs.amazonaws.cn/en_us/AmazonCloudWatch/latest/events/RunLambdaSchedule.html
-read -p 'Function Name: ' function_name
+read -e -p 'Function Name: ' -i "test_guin" function_name
 
 cd ../
 cp packages.zip ori_packages.zip
