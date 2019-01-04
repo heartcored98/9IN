@@ -81,6 +81,7 @@ def article_handler(event, context):
                     message_ids.append(resp.message_id)
                 except:
                     pass
+                logger.info("Post url={}. title={} pushed successfully".format(url, title))
             else:
                 logger.error("Post url={}. title={} got zero length".format(url, title))
         else:
