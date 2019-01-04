@@ -78,9 +78,9 @@ def article_handler(event, context):
                 resp = telegram_pusher.send_message(content)
                 try:
                     message_ids.append(resp.message_id)
+                    logger.info("Post url={}. title={} pushed successfully".format(url, title))
                 except:
-                    pass
-                logger.info("Post url={}. title={} pushed successfully".format(url, title))
+                    logger.error("Post url={}. title={} failed to parse article".format(url, title))
             else:
                 logger.error("Post url={}. title={} got zero length".format(url, title))
         else:
