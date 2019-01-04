@@ -1,7 +1,5 @@
 import logging
-from post_parser import *
-from os import listdir
-from os.path import isfile, join
+from post_parser import get_ara_table
 from s3_utils import *
 from utils import load_yml_config
 
@@ -28,7 +26,13 @@ def ara_wanted_handler(event, context):
     filename = settings.ARA_WANTED_FILE_NAME
     base_url = settings.ARA_WANTED_BASE_URL
     bucket = settings.BUCKET_NAME
+    TEST_MODE = settings.TEST_MODE
+    STOP_WORDS = settings.STOP_WORDS
+    MAX_LEN = settings.MAX_LEN
     filepath = "{}/{}".format(bucket, filename)
+    logger.info("TEST_MODE : {}".format(TEST_MODE))
+    logger.info("STOP_WORDS : {}".format(str(STOP_WORDS)))
+    logger.info("MAX_LEM : {}".format(MAX_LEN))
 
     # ===== Download previous posts ====== #
     logger.info("Downloading previous posts...")
@@ -49,7 +53,7 @@ def ara_wanted_handler(event, context):
         logger.info("Find new post ids : {}. {} posts.".format(str(new_ids), len(new_ids)))
         new_posts = new_table.loc[new_ids, :]
         payload = generate_payload(new_posts, base_url)
-        payload.update(event)
+        payload.update({"TEST_MODE":TEST_MODE})
         logger.info("Generate payload done!")
 
         # ===== Invoke Article Parsing Lambda Fuction ===== #

@@ -14,7 +14,6 @@
 # Docker-compose install link : https://stackoverflow.com/questions/36685980/docker-is-installed-but-docker-compose-is-not-why
 
 read -e -p 'Function Name: ' -i "test_sele" function_name
-
 cd ../
 
 #rm -rf bin
@@ -30,7 +29,6 @@ cd ../
 # Clean
 #rm headless-chromium.zip chromedriver.zip
 
-
 cp packages_sele.zip ori_packages_sele.zip
 zip -g packages_sele.zip article_parser.py pusher.py webmonitor.py s3_utils.py utils.py settings.yml chromedriver headless-chromium
 mv packages_sele.zip deploys_selenium.zip
@@ -43,8 +41,8 @@ aws lambda create-function --function-name $function_name --runtime python3.6 --
 aws lambda update-function-code --function-name $function_name --region ap-northeast-2 --s3-bucket guin-bucket --s3-key deploys_selenium.zip
 aws lambda update-function-configuration --function-name $function_name \
 --region ap-northeast-2 \
---timeout 16 \
---memory-size 500 \
+--timeout 30 \
+--memory-size 350 \
 --environment Variables="{PATH=/var/task/bin:/var/task/,PYTHONPATH=/var/task/src:/var/task/lib}"
 
 

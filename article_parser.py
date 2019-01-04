@@ -10,7 +10,6 @@ from pusher import *
 from webmonitor import WebDriver
 
 
-
 def generate_content(title, body, url):
     content = "*[{}]*\n{} \n[자세히보기>]({})".format(title, body, url)
     return content
@@ -52,12 +51,12 @@ def article_handler(event, context):
     logger.setLevel(logging.DEBUG)
 
     TEST_MODE = event.get('TEST_MODE', True)
+    posts = event.get('posts', [])
 
     settings = load_yml_config()
     ara_id = settings.ARA_ID
     ara_key = settings.ARA_KEY
     MAX_LEN = settings.MAX_LEN
-    posts = event.get('posts', [])
 
     ara = ParserARA()
     ara.login(ara_id, ara_key)
