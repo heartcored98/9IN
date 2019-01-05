@@ -36,7 +36,7 @@ mv ori_packages_sele.zip packages_sele.zip
 aws s3 cp deploys_selenium.zip s3://guin-bucket/
 
 aws lambda delete-function --function-name $function_name
-aws lambda create-function --function-name $function_name --runtime python3.6 --role arn:aws:iam::915999582461:role/role_guin --handler article_parser.article_handler --region ap-northeast-2 --zip-file fileb://sample.zip
+aws lambda create-function --function-name $function_name --runtime python3.6 --role arn:aws:iam::915999582461:role/role_guin --handler article_parser.article_handler --region ap-northeast-2 --zip-file fileb://dummy.zip
 
 aws lambda update-function-code --function-name $function_name --region ap-northeast-2 --s3-bucket guin-bucket --s3-key deploys_selenium.zip
 aws lambda update-function-configuration --function-name $function_name \

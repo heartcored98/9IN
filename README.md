@@ -23,16 +23,19 @@
 
 # Tech/Framework Used
 - [Python 3.6.5](https://www.python.org/downloads/release/python-365/) (Favorite Language)
-- [requests](https://pypi.org/project/requests/) (Fast Posts Pulling)
+- [requests](https://pypi.org/project/requests/) (Fast Post List Pulling)
 - [bs4](https://pypi.org/project/beautifulsoup4/) (Parsing HTML Table)
-- [selenium](https://pypi.org/project/selenium/) (Posts Content Pulling)
+- [selenium](https://pypi.org/project/selenium/) (Posts Body Content Pulling)
 - linux_chromedriver (Mate of Selenium)
 - [python-telegram-bot](https://python-telegram-bot.org/) (Telegram Push Notification)
-- [ubuntu systemd](https://wiki.ubuntu.com/systemd)  (Automaitc Start & Restart)
-- [AWS Lightsail](https://aws.amazon.com/ko/lightsail/) (Low Cost Minimal Server)
 
 # TODO
 - [X] Fix delete post error
 - [X] Filtering carfull articles
 - [X] Add telegram push notification
-- [ ] Add preview
+- [X] Add article preview feature  
+- [ ] Monitor not only 'Wanted' Tab but also 'Job' Tab  
+- [ ] Add intent url to open the link with default browser(iOS/Android)    
+
+# Reference  
+- 
