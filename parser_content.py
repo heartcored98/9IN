@@ -1,4 +1,4 @@
-from webmonitor import WebDriver
+from selenium_driver import WebDriver
 from bs4 import BeautifulSoup
 
 
