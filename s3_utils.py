@@ -2,6 +2,13 @@ import yaml
 import s3fs
 import pandas as pd
 from io import StringIO
+import boto3
+import json
+from utils import load_yml_config
+
+##############################################################################
+######################## Configuration Object   ##############################
+##############################################################################
 
 
 class Objdict(dict):
@@ -27,6 +34,48 @@ def load_yml_config(filename='settings.yml'):
             return Objdict(yaml.load(stream))
         except yaml.YAMLError as exc:
             return None
+
+
+##############################################################################
+############################ Get AWS Object   ################################
+##############################################################################
+
+
+def get_session():
+    settings = load_yml_config()
+    session = boto3.Session(
+        aws_access_key_id=settings.ACCESS_ID,
+        aws_secret_access_key=settings.ACCESS_KEY,
+        region_name=settings.REGION_NAME
+    )
+    return session
+
+
+def get_client(session, service):
+    return session.client(service)
+
+
+##############################################################################
+############################ Get Lambda Client  ##############################
+##############################################################################
+
+
+def get_lambda_client():
+    return get_client(get_session(), "lambda")
+
+
+def invoke_event(func_name, payload):
+    lambda_client = get_lambda_client()
+    lambda_client.invoke(
+        FunctionName=func_name,
+        InvocationType='Event',
+        Payload=json.dumps(payload),
+    )
+
+
+##############################################################################
+######################### Get S3 File System   ###############################
+##############################################################################
 
 
 def get_s3fs():
@@ -67,7 +116,6 @@ if __name__ == '__main__':
     table = get_ara_table()
     print(table)
     upload_df(table, filepath)
-
     download_df(filepath)
 
 

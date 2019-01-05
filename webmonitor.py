@@ -1,138 +1,209 @@
-import pandas as pd
-import requests
-import os
-import subprocess
+###############################################################################
+# Chromedriver download url : https://chromedriver.storage.googleapis.com/index.html?path=2.45/
+# Selenium Get Started Page : http://chromedriver.chromium.org/getting-started
+
+import os, signal
+from os.path import join
 import logging
 import time
 
-from pusher import *
-from parser import WebDriver
-from utils import load_yml_config
-from html_parser import HTMLTableParser
-
-settings = load_yml_config()
-
-
-def kill_chrome():
-    cmd = 'sudo pkill -f chromium'
-    return_value = subprocess.call(cmd, shell=True)
-    return return_value
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+import selenium.webdriver.support.expected_conditions as EC
+import selenium.webdriver.support.ui as ui
 
 
-################################################################################
-############################# Monitor Web Posts ################################
-################################################################################
+class WebDriver:
+    """Wrapper Class of webdriver which has useful functionality
+    This class handle all the web browsing process with connecting to url,
+    clicking button on website, extracting text on websites. Also it has
+    its own retry decorator feature which enable auto-reconnection when
+    initial attempt get failed.
+    """
 
+    def __init__(self, target_url, window=False):
+        self.logger = logging.getLogger(__name__)
 
-class MonitorARA():
-    def __init__(self):
-        self.target_url = settings.URL_ARA
-        self.stopwords = settings.STOP_WORDS
-        self.table_parser = HTMLTableParser()
-        self.path_data_ara = settings.PATH_DATA_ARA
-        self.p_table = self.get_table() # update with latest post list
+        self.count_reset = 0
+        self.MAX_COUNT = 5
 
-    def generate_url(self, index):
-        template_url = 'http://ara.kaist.ac.kr/board/Wanted/{}/?page_no=1'
-        return template_url.format(index)
+        self.target_url = target_url
+        self.PATH_SCREENSHOT_DIR = './screenshot'
+        self.window = window
+        self.driver = None
+        self.start_driver()
 
-    def is_stopwords(self, text):
-        flag = False
-        for stopword in self.stopwords:
-            if stopword in text:
-                flag = True
-        return flag
-
-    def load_table(self):
-        if os.path.isfile(self.path_data_ara):
-            table = pd.read_csv(self.path_data_ara)
-            table = table.drop(columns=['id.1'])
-            table.index = table['id']
-        else:
-            table = self.get_table()
-            self.save_table(table)
-        return table
-
-    def save_table(self, table):
-        if len(table) > 15:
-            table.to_csv(self.path_data_ara)
-
-    def get_table(self):
-        while True:
-            html_string = requests.get(self.target_url).text
-            table = self.table_parser.parse_html(html_string)[0]
-            table.index = table['id']
-            table = table.drop(columns=['N', '작성자', '말머리'])
-            if len(table) > 15:
-                return table
-
-    def update_p_table(self, table):
-        if len(table) > 15:
-            set_old_index = set(self.p_table.index.values)
-            for idx in set_old_index:
+    def _retry(func):
+        def retried_func(*args, **kwargs):
+            MAX_TRIES = 2
+            tries = 1
+            while True:
                 try:
-                    table = table.drop(index=[idx])
+                    resp = func(*args, **kwargs)
+                    return resp
+                except NoSuchElementException:
+                    raise NoSuchElementException
                 except:
-                    pass
-            table = table.append(self.p_table)
-            table = table.iloc[:min(len(table), 30)]
-            self.p_table = table
+                    logger = logging.getLogger(__name__)
+                    error = "error is occured {} times @{}".format(str(tries), func.__name__)
+                    logger.error(error, exc_info=True)
+                    tries += 1
+                    # time.sleep(0.5)
+                    if tries > MAX_TRIES:
+                        raise
+                    continue
 
-    def find_update(self, p_table, c_table):
-        set_p_index = set(p_table.index.values)
-        set_c_index = set(c_table.index.values)
-        set_new_posts = set_c_index - set_p_index
-        set_old_posts = set_c_index - set_new_posts
+        return retried_func
 
-        self.update_p_table(c_table)
+    def set_counter(self, MAX_COUNT=5):
+        self.MAX_COUNT = MAX_COUNT
 
-        changed_posts = dict()
-        finished_posts = dict()
-        for id in set_old_posts:
-            p_title = p_table.loc[[id]]['제목'].values[0]
-            c_title = c_table.loc[[id]]['제목'].values[0]
-            self.p_table.loc[id, '제목'] = c_title
-            if p_title != c_title:
-                if '마감' in c_title or '완료' in c_title:
-                    finished_posts[id] = {'title': c_title, 'link': self.generate_url(id)}
+    def reset_driver(self):
+        self.logger.info("start resetting driver")
+        if self.count_reset >= self.MAX_COUNT:
+            self.quit_driver()
+            # time.sleep(1)
+            self.start_driver()
+            self.count_reset = 0
+        else:
+            self.count_reset += 1
+        self.logger.info("end resetting driver")
+
+    @_retry
+    def start_driver(self, **kwargs):
+        self.logger.info("driver warming up")
+
+        try:
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_argument('--headless')
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--window-size=1280x1696')
+            chrome_options.add_argument('--user-data-dir=/tmp/user-data')
+            chrome_options.add_argument('--hide-scrollbars')
+            chrome_options.add_argument('--enable-logging')
+            chrome_options.add_argument('--log-level=0')
+            chrome_options.add_argument('--v=99')
+            chrome_options.add_argument('--single-process')
+            chrome_options.add_argument('--data-path=/tmp/data-path')
+            chrome_options.add_argument('--ignore-certificate-errors')
+            chrome_options.add_argument('--homedir=/tmp')
+            chrome_options.add_argument('--disk-cache-dir=/tmp/cache-dir')
+            chrome_options.add_argument(
+                'user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
+            chrome_options.binary_location = os.getcwd() + "/headless-chromium"
+
+            self.driver = webdriver.Chrome(chrome_options=chrome_options)
+        except:
+            self.logger.critical("some error", exc_info=True)
+        self.driver.get(self.target_url)
+        self.logger.info("new driver generated")
+
+    def quit_driver(self):
+        try:
+            if self.driver is not None:
+                self.driver.service.process.send_signal(signal.SIGTERM)
+                self.driver.quit()
+                self.logger.info("driver terminated")
+
+        except:
+            self.logger.error('error in quit_driver', exc_info=True)
+
+    @_retry
+    def get_url(self, url):
+        self.driver.get(url)
+
+    def get_source(self):
+        return self.driver.page_source
+
+    def screenshot(self, name="shoot.png"):
+        filename = "{}/{}".format(self.PATH_SCREENSHOT_DIR, name)
+        self.driver.save_screenshot(filename)
+
+
+    def get_pid(self):
+        try:
+            if self.driver is not None:
+                return self.driver.service.process.pid
+        except:
+            return -1
+
+    def is_visible(self, locator, timeout=1.0):
+        try:
+            ui.WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located((By.XPATH, locator)))
+            return True
+        except TimeoutException:
+            return False
+        except:
+            self.logger.error("error in is_visible", exc_info=True)
+            return False
+
+    @_retry
+    def get_text(self, path):
+        try:
+            if self.is_visible(path):
+                context = self.driver.find_element_by_xpath(path)
+                return context.text
+            else:
+                raise NoSuchElementException
+        except NoSuchElementException:
+            raise NoSuchElementException
+
+        except Exception:
+            self.logger.error("error in get text", exc_info=True)
+            raise
+
+    @_retry
+    def click_btn(self, path, id=False, selector=False):
+        try:
+            if self.is_visible(path):
+                if id:
+                    btn = self.driver.find_element_by_id(path)
+                elif selector:
+                    btn = self.driver.find_element_by_selector(path)
                 else:
-                    changed_posts[id] = {'p_title': p_title, 'c_title': c_title, 'link': self.generate_url(id)}
+                    btn = self.driver.find_element_by_xpath(path)
+                btn.click()
+            else:
+                raise NoSuchElementException
+        except NoSuchElementException:
+            print("No element")
 
-        new_posts = dict()
-        for id in set_new_posts:
-            c_title = c_table.loc[[id]]['제목'].values[0]
-            if not self.is_stopwords(c_title):
-                new_posts[id] = {'title': c_title, 'link': self.generate_url(id)}
+        except Exception:
+            self.logger.error("error in click_btn", exc_info=True)
+            raise
 
-        return new_posts, changed_posts, finished_posts
+if __name__ == '__main__':
 
+    print('start loading')
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox') # required when running as root user. otherwise you would get no sandbox errors.
 
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--window-size=1280x1696')
+    chrome_options.add_argument('--user-data-dir=/tmp/user-data')
+    chrome_options.add_argument('--hide-scrollbars')
+    chrome_options.add_argument('--enable-logging')
+    chrome_options.add_argument('--log-level=0')
+    chrome_options.add_argument('--v=99')
+    chrome_options.add_argument('--single-process')
+    chrome_options.add_argument('--data-path=/tmp/data-path')
+    chrome_options.add_argument('--ignore-certificate-errors')
+    chrome_options.add_argument('--homedir=/tmp')
+    chrome_options.add_argument('--disk-cache-dir=/tmp/cache-dir')
+    chrome_options.add_argument(
+        'user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
 
-class ParserARA(WebDriver):
-    def __init__(self):
-        self.target_url = settings.URL_ARA
-        self.table_parser = HTMLTableParser()
-        WebDriver.__init__(self, target_url=self.target_url)
+    driver = webdriver.Chrome('./headless-chromium', chrome_options=chrome_options)  # Optional argument, if not specified will search path.
+    print('loaded')
+    driver.get('https://ara.kaist.ac.kr/board/Wanted/')
+    print('connected')
+    time.sleep(1) # Let the user actually see something!
+    print('sleeped')
+    print(driver.page_source)
 
-    def login(self):
-        path_id = '//*[@id="miniLoginID"]'
-        path_pw = '//*[@id="miniLoginPassword"]'
-        path_btn = '//*[@id="loginBox"]/dd/form/ul/li[3]/a[1]'
-
-        input_id = self.driver.find_element_by_xpath(path_id)
-        input_id.send_keys(settings.ARA_ID)
-
-        input_pw = self.driver.find_element_by_xpath(path_pw)
-        input_pw.send_keys(settings.ARA_KEY)
-
-        # Login to the site
-        self.click_btn(path_btn)
-
-    def get_table(self):
-        path_table = '//*[@id="board_content"]/table'
-        table = self.driver.find_element_by_xpath(path_table)
-        html_string = table.get_attribute('innerHTML')
-        html_string = self.driver.page_source
-        tables = self.table_parser.parse_html(html_string)
-        return tables
-
+    driver.quit()
