@@ -1,5 +1,5 @@
 import logging
-from post_parser import get_ara_table
+from parser_post import get_ara_table
 from s3_utils import *
 from utils import load_yml_config
 
