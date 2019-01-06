@@ -14,11 +14,20 @@
 # Screenshots  
 
 <p align="center"> 
-<img src="images/screenshot1.png" width="300"> <img src="images/screenshot2.png" width="300">
+<img src="images/screenshot1.png" width="300"> <img src="images/screenshot3.png" width="300">
 </p>
 <p align="center"> 
   아라 게시판에 새 글 업로드나 글 제목의 변경을 감지해 알려줍니다. <br> 메시지 링크를 통해 게시글을 열 수 있습니다.   
+</p>  
+
+# System Architecture  
+<p align="center"> 
+<img src="images/AWS_architecture.png" width="300">
 </p>
+<p align="center"> 
+  AWS Cloud Architecture   
+</p>  
+
 
 
 # Tech/Framework Used
