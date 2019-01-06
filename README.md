@@ -28,6 +28,8 @@
   AWS Cloud Architecture   
 </p>  
 
+
+**[서비스 구성]**  
 1. AWS CloudWatch가 1분마다 첫번째 Lambda 함수(handler_monitor_post.py)를 실행시킵니다.  
 2. Lambda 함수가 실행되면서 S3 버킷으로부터 마지막으로 체크했던 게시글들의 리스트를 다운로드합니다.
 3. 아라 사이트에 접속하여 현재 게시글들의 리스트를 가져오고 이전 게시글과 비교하여 신규 업로드 글을 감지합니다.  
