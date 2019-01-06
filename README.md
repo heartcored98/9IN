@@ -22,7 +22,7 @@
 
 # System Architecture  
 <p align="center"> 
-<img src="images/AWS_architecture.png" width="300">
+<img src="images/AWS_architecture.png" width="900">
 </p>
 <p align="center"> 
   AWS Cloud Architecture   
