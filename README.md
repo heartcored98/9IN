@@ -17,7 +17,7 @@
 <img src="images/screenshot1.png" width="300"> <img src="images/screenshot3.png" width="300">
 </p>
 <p align="center"> 
-  아라 게시판에 새 글 업로드나 글 제목의 변경을 감지해 알려줍니다. <br> 메시지 링크를 통해 게시글을 열 수 있습니다.   
+  아라 구인란에 새 글 업로드를 감지해 텔레그램 메신저로 알려줍니다. <br> 자세히 보기를 통해 게시글을 열 수 있습니다.   
 </p>  
 
 # System Architecture  
@@ -27,6 +27,15 @@
 <p align="center"> 
   AWS Cloud Architecture   
 </p>  
+
+1. AWS CloudWatch가 1분마다 첫번째 Lambda 함수(handler_monitor_post.py)를 실행시킵니다.  
+2. Lambda 함수가 실행되면서 S3 버킷으로부터 마지막으로 체크했던 게시글들의 리스트를 다운로드합니다.
+3. 아라 사이트에 접속하여 현재 게시글들의 리스트를 가져오고 이전 게시글과 비교하여 신규 업로드 글을 감지합니다.  
+4. 현재 게시글 리스트로 S3 파일을 업데이트합니다.  
+5. 새로운 글들의 URL을 인자로 삼아 두번째 Lambda 함수(handler_post_content)를 실행시킵니다.  
+6. Selenium과 Chromium을 이용해 아라 사이트에 로그인 후 게시글 들의 본문 내용을 가져옵니다. 게시글 제목, 본문 내용, URL을 취합해 메시지를 생성합니다.  
+7. 생성된 메시지를 Telegram 봇에게 보내줍니다.  
+8. 봇이 구인 알람 채널에 새 게시글을 게재해 유저로 하여금 푸쉬 알람을 받게 합니다.    
 
 
 
