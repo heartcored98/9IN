@@ -178,11 +178,9 @@ class WebDriver:
 
 if __name__ == '__main__':
 
-    print('start loading')
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox') # required when running as root user. otherwise you would get no sandbox errors.
-
+    chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--window-size=1280x1696')
     chrome_options.add_argument('--user-data-dir=/tmp/user-data')
@@ -195,15 +193,10 @@ if __name__ == '__main__':
     chrome_options.add_argument('--ignore-certificate-errors')
     chrome_options.add_argument('--homedir=/tmp')
     chrome_options.add_argument('--disk-cache-dir=/tmp/cache-dir')
-    chrome_options.add_argument(
-        'user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
+    chrome_options.add_argument('user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
 
-    driver = webdriver.Chrome('./headless-chromium', chrome_options=chrome_options)  # Optional argument, if not specified will search path.
-    print('loaded')
+    driver = webdriver.Chrome('./headless-chromium', chrome_options=chrome_options)
     driver.get('https://ara.kaist.ac.kr/board/Wanted/')
-    print('connected')
-    time.sleep(1) # Let the user actually see something!
-    print('sleeped')
+    time.sleep(1)
     print(driver.page_source)
-
     driver.quit()

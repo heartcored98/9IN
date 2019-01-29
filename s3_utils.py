@@ -61,7 +61,7 @@ def get_client(session, service):
 
 
 def get_lambda_client():
-    return get_client(get_session(), "lambda")
+    return get_client(get_session(), "lam bda")
 
 
 def invoke_event(func_name, payload):
@@ -109,14 +109,17 @@ if __name__ == '__main__':
     from parser_post import get_ara_table
 
     settings = load_yml_config()
-    filename = settings.FILE_NAME
+    filename = settings.DEPLOY_ARA_WANTED_FILE_NAME
     bucket = settings.BUCKET_NAME
     filepath = "{}/{}".format(bucket, filename)
 
     table = get_ara_table()
     print(table)
     upload_df(table, filepath)
-    download_df(filepath)
+    prev_df = download_df(filepath)
+
+    print(prev_df)
+
 
 
 
