@@ -89,7 +89,7 @@ def get_ara_table(url='https://ara.kaist.ac.kr/board/Wanted/', test_mode=False):
 if __name__ == '__main__':
     settings = load_yml_config()
     bucket = settings.BUCKET_NAME
-    filename = settings.TEST_ARA_WANTED_FILE_NAME
+    filename = settings.DEPLOY_ARA_WANTED_FILE_NAME
 
     filepath = "{}/{}".format(bucket, filename)
 
