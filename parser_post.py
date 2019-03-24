@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
+from s3_utils import *
 from utils import load_yml_config
 
 class HTMLTableParser:
@@ -87,4 +88,11 @@ def get_ara_table(url='https://ara.kaist.ac.kr/board/Wanted/', test_mode=False):
 
 if __name__ == '__main__':
     settings = load_yml_config()
-    print(get_ara_table())
+    bucket = settings.BUCKET_NAME
+    filename = settings.TEST_ARA_WANTED_FILE_NAME
+
+    filepath = "{}/{}".format(bucket, filename)
+
+    new_table = get_ara_table()
+    print(new_table)
+    upload_df(new_table, filepath)

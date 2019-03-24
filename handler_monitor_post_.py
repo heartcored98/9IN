@@ -49,6 +49,9 @@ def ara_wanted_handler(event, context):
     except FileNotFoundError:
         flag_prev_table = False
         logger.error("File not found. Maybe first time to launch?")
+    except:
+        flag_prev_table = False
+        logger.error("Error occurred while downloading previous table!")
 
     # ===== Fetching current posts ====== #
     logger.info("Fetching current posts...")

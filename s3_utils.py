@@ -1,3 +1,5 @@
+#-*- coding:utf-8 -*-
+
 import yaml
 import s3fs
 import pandas as pd
@@ -89,7 +91,8 @@ def get_s3fs():
 def upload_df(table, filepath):
     fs = get_s3fs()
     with fs.open(filepath, 'wb') as f:
-        bytes_to_write = table.to_csv(None).encode(encoding='ms949')
+        before_encode = table.to_csv(None)
+        bytes_to_write = before_encode.encode(encoding='ms949', errors='ignore')
         f.write(bytes_to_write)
 
 
@@ -114,11 +117,8 @@ if __name__ == '__main__':
     filepath = "{}/{}".format(bucket, filename)
 
     table = get_ara_table()
-    print(table)
     upload_df(table, filepath)
     prev_df = download_df(filepath)
-
-    print(prev_df)
 
 
 
