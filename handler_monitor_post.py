@@ -44,14 +44,18 @@ def ara_wanted_handler(event, context):
     flag_prev_table = True
     try:
         prev_table = download_df(filepath)
+        if prev_table is None: # If empty dataframe downloaded then mark as flag_prev_table False
+            flag_prev_table = False
+            logger.error("Empty DataFrame Detected! DataFrame would be updated!")
+            raise ValueError("Break current process")
         last_id = prev_table.index[0]
         logger.info("Downloading previous posts done! {} posts. Last id={}".format(len(prev_table), last_id))
     except FileNotFoundError:
         flag_prev_table = False
         logger.error("File not found. Maybe first time to launch?")
-    except:
+    except Exception as e:
         flag_prev_table = False
-        logger.error("Error occurred while downloading previous table!")
+        logger.error("Unknown error occurred while downloading previous table! + \n" + str(e), exc_info=True)
 
     # ===== Fetching current posts ====== #
     logger.info("Fetching current posts...")
@@ -80,8 +84,6 @@ def ara_wanted_handler(event, context):
             logger.info("Invoked lambda_selenium!")
         else:
             logger.info("No post is found")
-
-
 
 
 if __name__ == '__main__':
