@@ -63,7 +63,7 @@ def get_client(session, service):
 
 
 def get_lambda_client():
-    return get_client(get_session(), "lam bda")
+    return get_client(get_session(), "lambda")
 
 
 def invoke_event(func_name, payload):
