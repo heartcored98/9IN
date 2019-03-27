@@ -99,13 +99,16 @@ def upload_df(table, filepath):
 def download_df(filepath):
     # Ref : https://stackoverflow.com/questions/38154040/save-dataframe-to-csv-directly-to-s3-python
 
-    fs = get_s3fs()
-    with fs.open(filepath, 'rb') as f:
-        table_bytes = f.read()
-        table = pd.read_csv(StringIO(table_bytes.decode('ms949')))
-        table.index = table['id']
-        table = table.drop(columns=['id'])
-        return table
+    try:
+        fs = get_s3fs()
+        with fs.open(filepath, 'rb') as f:
+            table_bytes = f.read()
+            table = pd.read_csv(StringIO(table_bytes.decode('ms949')))
+            table.index = table['id']
+            table = table.drop(columns=['id'])
+            return table
+    except pd.errors.EmptyDataError:
+        return None
 
 
 if __name__ == '__main__':

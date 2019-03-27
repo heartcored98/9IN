@@ -1,3 +1,5 @@
+#-*- coding:utf-8 -*-
+
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
@@ -90,9 +92,13 @@ if __name__ == '__main__':
     settings = load_yml_config()
     bucket = settings.BUCKET_NAME
     filename = settings.DEPLOY_ARA_WANTED_FILE_NAME
-
     filepath = "{}/{}".format(bucket, filename)
 
     new_table = get_ara_table()
     print(new_table)
-    upload_df(new_table, filepath)
+    #upload_df(new_table, filepath)
+
+    prev_table = download_df(filepath)
+    print(prev_table)
+
+    # print(prev_table)
