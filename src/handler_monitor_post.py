@@ -23,29 +23,24 @@ def ara_wanted_handler(event, context):
     logger.info("###########################################")
 
     # ===== Get Settings Parameters ====== #
+    ARTICLE_PARSER_LAMBDA = os.environ['ARTICLE_PARSER_LAMBDA'] #settings.ARTICLE_PARSER_LAMBDA
+    TEST_MODE = bool(os.environ['TEST_MODE']) #settings.TEST_MODE
+    STOP_WORDS = os.environ['STOP_WORDS'].split('/')
+
+
     settings = load_yml_config()
     base_url = settings.ARA_WANTED_BASE_URL
     bucket = settings.BUCKET_NAME
-
-    ARTICLE_PARSER_LAMBDA = os.environ['ARTICLE_PARSER_LAMBDA'] #settings.ARTICLE_PARSER_LAMBDA
-    TEST_MODE = bool(os.environ['TEST_MODE']) #settings.TEST_MODE
-    MAX_LEN = int(os.environ['MAX_LEN']) #settings.MAX_LEN
-    logger.info(str(ARTICLE_PARSER_LAMBDA))
-    logger.info(str(TEST_MODE))
-    logger.info(str(MAX_LEN))
-    logger.info(str(type(TEST_MODE)))
-    logger.info(str(type(MAX_LEN)))
 
     if TEST_MODE:
         filename = settings.TEST_ARA_WANTED_FILE_NAME
     else:
         filename = settings.DEPLOY_ARA_WANTED_FILE_NAME
 
-    STOP_WORDS = settings.STOP_WORDS
     filepath = "{}/{}".format(bucket, filename)
+    logger.info("ARTICLE_PARSER : {}".format(ARTICLE_PARSER_LAMBDA))
     logger.info("TEST_MODE : {}".format(TEST_MODE))
     logger.info("STOP_WORDS : {}".format(str(STOP_WORDS)))
-    logger.info("MAX_LEM : {}".format(MAX_LEN))
 
     # ===== Download previous posts ====== #
     logger.info("Downloading previous posts...")

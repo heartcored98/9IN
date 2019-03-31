@@ -20,9 +20,12 @@ read -e -p "TEST MODE? (y/n): " -i "y" TEST_MODE
 if [[ $TEST_MODE == n ]]
 then
     function_name="${function_name}_deploy"
+    env_variables="PATH=/var/task/bin:/var/task/,PYTHONPATH=/var/task/src:/var/task/lib,MAX_LEN=${MAX_LEN},TEST_MODE=false"
 else
     function_name="${function_name}_test"
+    env_variables="PATH=/var/task/bin:/var/task/,PYTHONPATH=/var/task/src:/var/task/lib,MAX_LEN=${MAX_LEN},TEST_MODE=true"
 fi
+
 
 cd ../
 
@@ -71,9 +74,7 @@ aws lambda create-function --function-name $function_name \
 --handler handler_post_content.article_handler \
 --region ap-northeast-2 \
 --zip-file fileb://dummy.zip \
---environment Variables={"PATH=/var/task/bin:/var/task/,PYTHONPATH=/var/task/src:/var/task/lib,${MAX_LEN}=120}"
-
-
+--environment Variables={${env_variables}}
 
 aws lambda update-function-code --function-name $function_name --region ap-northeast-2 --s3-bucket guin-bucket --s3-key deploys_selenium.zip
 aws lambda update-function-configuration --function-name $function_name \

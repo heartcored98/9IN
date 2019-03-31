@@ -8,6 +8,7 @@ from pusher_telegram import *
 
 
 def generate_content(title, body, url):
+    # TODO : exclude bracket if bracket is already included
     content = "*[{}]*\n{} \n[자세히보기>]({})".format(title, body, url)
     return content
 
@@ -16,13 +17,14 @@ def article_handler(event, context):
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
-    TEST_MODE = event.get('TEST_MODE', True)
+    MAX_LEN = int(os.environ['MAX_LEN'])
+    TEST_MODE = bool(os.environ['TEST_MODE'])
+
     posts = event.get('posts', [])
 
     settings = load_yml_config()
     ara_id = settings.ARA_ID
     ara_key = settings.ARA_KEY
-    MAX_LEN = os.environ['MAX_LEN']
 
     ara = ParserARA()
     ara.login(ara_id, ara_key)
