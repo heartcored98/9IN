@@ -49,13 +49,21 @@
 - linux_chromedriver (Mate of Selenium)
 - [python-telegram-bot](https://python-telegram-bot.org/) (Telegram Push Notification)
 
-# TODO
+# TODO  
+### Feature  
 - [X] Fix delete post error
 - [X] Filtering carfull articles
 - [X] Add telegram push notification
 - [X] Add article preview feature  
 - [ ] Monitor not only 'Wanted' Tab but also 'Job' Tab  
 - [ ] Add intent url to open the link with default browser(iOS/Android)    
+
+### Deploy  
+- [ ] Deploy script change configuration between test/deploy  
+
+### Security  
+- [ ] Separate and store api keys and tokens in safe place
+
 
 # Reference  
 - 
