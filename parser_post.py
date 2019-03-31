@@ -68,7 +68,7 @@ class HTMLTableParser:
 
         return df
 
-def get_ara_table(url='https://ara.kaist.ac.kr/board/Wanted/', test_mode=False):
+def get_ara_table(url='https://ara.kaist.ac.kr/board/Wanted/', test_mode=True):
 
     settings = load_yml_config()
     STOP_WORDS = settings.STOP_WORDS
