@@ -32,7 +32,23 @@ cd ../
 #cd ..
 
 cp packages_sele.zip ori_packages_sele.zip
-zip -g packages_sele.zip src/handler_post_content.py src/parser_content.py src/pusher_telegram.py src/s3_utils.py src/utils.py src/selenium_driver.py settings.yml packages/chromedriver packages/headless-chromium
+
+# Attach source code into packages_sele.zip inside src directory
+mv packages_sele.zip src/packages_sele.zip
+cd src
+zip -g packages_sele.zip handler_post_content.py parser_content.py pusher_telegram.py s3_utils.py utils.py selenium_driver.py
+cd ..
+mv src/packages_sele.zip packages_sele.zip
+
+# Attach chromedriver and selenium into packages_sele.zip inside packages directory
+mv packages_sele.zip packages/packages_sele.zip
+cd packages
+zip -g packages_sele.zip chromedriver headless-chromium
+cd ..
+mv packages/packages_sele.zip packages_sele.zip
+
+# Attach deploy settings
+zip -g packages_sele.zip settings.yml
 mv packages_sele.zip deploys_selenium.zip
 mv ori_packages_sele.zip packages_sele.zip
 aws s3 cp deploys_selenium.zip s3://guin-bucket/
@@ -54,7 +70,7 @@ aws lambda update-function-configuration --function-name $function_name \
 --memory-size 350
 
 aws lambda update-function-configuration --function-name $function_name \
---environment Variables={PATH=/var/task/bin:/var/task/,PYTHONPATH=/var/task/src:/var/task/lib}
+--environment Variables="{PATH=/var/task/bin:/var/task/,PYTHONPATH=/var/task/src:/var/task/lib}"
 
 
 

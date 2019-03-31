@@ -9,7 +9,16 @@ read -e -p "TEST MODE? (y/n): " -i "y" TEST_MODE
 
 cd ../
 cp packages.zip ori_packages.zip
-zip -g packages.zip src/parser_post.py src/pusher_telegram.py src/handler_monitor_post.py src/s3_utils.py src/utils.py settings.yml
+
+# Attatch source code into packages.zip inside src directory
+mv packages.zip src/packages.zip
+cd src
+zip -g packages.zip parser_post.py pusher_telegram.py handler_monitor_post.py s3_utils.py utils.py
+cd ..
+mv src/packages.zip packages.zip
+zip -g packages.zip settings.yml
+
+# Prepare packages for deploying
 mv packages.zip deploys.zip
 mv ori_packages.zip packages.zip
 aws s3 cp deploys.zip s3://guin-bucket/
