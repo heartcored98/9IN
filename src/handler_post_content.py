@@ -8,8 +8,10 @@ from pusher_telegram import *
 
 
 def generate_content(title, body, url):
-    # TODO : exclude bracket if bracket is already included
-    content = "*[{}]*\n{} \n[자세히보기>]({})".format(title, body, url)
+    if '[' in title or ']' in title:
+        content = "*{}*\n{} \n[자세히보기>]({})".format(title, body, url)
+    else:
+        content = "*[{}]*\n{} \n[자세히보기>]({})".format(title, body, url)
     return content
 
 

@@ -55,12 +55,13 @@
 - [X] Filtering carfull articles
 - [X] Add telegram push notification
 - [X] Add article preview feature  
+- [X] Bracket in title is selectively inserted 
 - [ ] Monitor not only 'Wanted' Tab but also 'Job' Tab  
-- [ ] Add intent url to open the link with default browser(iOS/Android)    
+- [ ] Add intent url to open the link with default browser(iOS/Android)   
 
 ### Deploy  
 - [X] Move source code into scr folder
-- [ ] Deploy script change configuration between test/deploy  
+- [X] Deploy script change configuration between test/deploy  
 
 ### Security  
 - [ ] Separate and store api keys and tokens in safe place
