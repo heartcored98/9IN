@@ -15,10 +15,9 @@ then
 else
     function_name="${function_name}_test"
     content_function_name="${content_function_name}_test"
+fi
 
 env_variables="STOP_WORDS=카풀/판매/팝니다/구매/구입/삽니다"
-
-fi
 
 cd ../
 cp packages.zip ori_packages.zip
@@ -41,6 +40,7 @@ aws lambda delete-function --function-name $function_name
 
 if [[ $TEST_MODE == n ]]
 then
+    echo $env_variables
     aws lambda create-function --function-name $function_name \
     --runtime python3.6 \
     --role arn:aws:iam::915999582461:role/role_guin \
