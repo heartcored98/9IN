@@ -22,7 +22,7 @@ pycparser==2.19
 python-dateutil==2.7.5
 python-telegram-bot==11.1.0
 pytz==2018.7
-PyYAML==3.13
+pyyaml>=4.2b1
 requests==2.21.0
 rsa==3.4.2
 s3fs==0.2.0
