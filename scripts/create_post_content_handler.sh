@@ -13,7 +13,17 @@
 # Docker deb link : https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.09.0~3-0~ubuntu-xenial_amd64.deb
 # Docker-compose install link : https://stackoverflow.com/questions/36685980/docker-is-installed-but-docker-compose-is-not-why
 
-read -e -p 'Function Name: ' -i "test_sele" function_name
+read -e -p 'Function Name: ' -i "guin_post_content" function_name
+read -e -p 'Max Length of Message?: ' -i "120" MAX_LEN
+read -e -p "TEST MODE? (y/n): " -i "y" TEST_MODE
+
+if [[ $TEST_MODE == n ]]
+then
+    function_name="${function_name}_deploy"
+else
+    function_name="${function_name}_test"
+fi
+
 cd ../
 
 
@@ -60,7 +70,9 @@ aws lambda create-function --function-name $function_name \
 --role arn:aws:iam::915999582461:role/role_guin \
 --handler handler_post_content.article_handler \
 --region ap-northeast-2 \
---zip-file fileb://dummy.zip
+--zip-file fileb://dummy.zip \
+--environment Variables={"PATH=/var/task/bin:/var/task/,PYTHONPATH=/var/task/src:/var/task/lib,${MAX_LEN}=120}"
+
 
 
 aws lambda update-function-code --function-name $function_name --region ap-northeast-2 --s3-bucket guin-bucket --s3-key deploys_selenium.zip
@@ -68,9 +80,5 @@ aws lambda update-function-configuration --function-name $function_name \
 --region ap-northeast-2 \
 --timeout 30 \
 --memory-size 350
-
-aws lambda update-function-configuration --function-name $function_name \
---environment Variables="{PATH=/var/task/bin:/var/task/,PYTHONPATH=/var/task/src:/var/task/lib}"
-
 
 

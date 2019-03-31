@@ -1,5 +1,6 @@
 
 import logging
+import os
 
 from parser_content import ParserARA
 from utils import load_yml_config
@@ -21,7 +22,7 @@ def article_handler(event, context):
     settings = load_yml_config()
     ara_id = settings.ARA_ID
     ara_key = settings.ARA_KEY
-    MAX_LEN = settings.MAX_LEN
+    MAX_LEN = os.environ['MAX_LEN']
 
     ara = ParserARA()
     ara.login(ara_id, ara_key)

@@ -3,9 +3,21 @@
 # Handling Lambda with Command line : https://hackernoon.com/exploring-the-aws-lambda-deployment-limits-9a8384b0bec3
 # AWS Lambda CLI Documentation : https://docs.aws.amazon.com/cli/latest/reference/lambda/update-function-configuration.html
 # AWS CloudWatch Rule : https://docs.amazonaws.cn/en_us/AmazonCloudWatch/latest/events/RunLambdaSchedule.html
-read -e -p "Function Name: " -i "test_guin" function_name
+read -e -p "Monitor Post Function Name: " -i "guin_monitor_post" function_name
+read -e -p "Post Content Function Name: " -i "guin_post_content" content_function_name
+
 read -e -p "TEST MODE? (y/n): " -i "y" TEST_MODE
 
+if [[ $TEST_MODE == n ]]
+then
+    function_name="${function_name}_deploy"
+    content_function_name="${content_function_name}_deploy"
+
+else
+    function_name="${function_name}_test"
+    content_function_name="${content_function_name}_test"
+
+fi
 
 cd ../
 cp packages.zip ori_packages.zip
@@ -25,7 +37,26 @@ aws s3 cp deploys.zip s3://guin-bucket/
 rm deploys.zip
 
 aws lambda delete-function --function-name $function_name
-aws lambda create-function --function-name $function_name --runtime python3.6 --role arn:aws:iam::915999582461:role/role_guin --handler handler_monitor_post.ara_wanted_handler --region ap-northeast-2 --zip-file fileb://dummy.zip
+
+if [[ $TEST_MODE == n ]]
+then
+    aws lambda create-function --function-name $function_name \
+    --runtime python3.6 \
+    --role arn:aws:iam::915999582461:role/role_guin \
+    --handler handler_monitor_post.ara_wanted_handler \
+    --region ap-northeast-2 \
+    --zip-file fileb://dummy.zip \
+    --environment Variables={"TEST_MODE=false,ARTICLE_PARSER_LAMBDA=${content_function_name}"}
+else
+    aws lambda create-function --function-name $function_name \
+    --runtime python3.6 \
+    --role arn:aws:iam::915999582461:role/role_guin \
+    --handler handler_monitor_post.ara_wanted_handler \
+    --region ap-northeast-2 \
+    --zip-file fileb://dummy.zip \
+    --environment Variables={"TEST_MODE=true,ARTICLE_PARSER_LAMBDA=${content_function_name}"}
+fi
+
 aws lambda update-function-code --function-name $function_name --region ap-northeast-2 --s3-bucket guin-bucket --s3-key deploys.zip
 aws lambda update-function-configuration --function-name $function_name \
 --region ap-northeast-2 \

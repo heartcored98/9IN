@@ -1,4 +1,5 @@
 import logging
+import os
 from parser_post import get_ara_table
 from s3_utils import *
 from utils import load_yml_config
@@ -25,15 +26,22 @@ def ara_wanted_handler(event, context):
     settings = load_yml_config()
     base_url = settings.ARA_WANTED_BASE_URL
     bucket = settings.BUCKET_NAME
-    ARTICLE_PARSER_LAMBDA = settings.ARTICLE_PARSER_LAMBDA
-    TEST_MODE = settings.TEST_MODE
+
+    ARTICLE_PARSER_LAMBDA = os.environ['ARTICLE_PARSER_LAMBDA'] #settings.ARTICLE_PARSER_LAMBDA
+    TEST_MODE = bool(os.environ['TEST_MODE']) #settings.TEST_MODE
+    MAX_LEN = int(os.environ['MAX_LEN']) #settings.MAX_LEN
+    logger.info(str(ARTICLE_PARSER_LAMBDA))
+    logger.info(str(TEST_MODE))
+    logger.info(str(MAX_LEN))
+    logger.info(str(type(TEST_MODE)))
+    logger.info(str(type(MAX_LEN)))
+
     if TEST_MODE:
         filename = settings.TEST_ARA_WANTED_FILE_NAME
     else:
         filename = settings.DEPLOY_ARA_WANTED_FILE_NAME
 
     STOP_WORDS = settings.STOP_WORDS
-    MAX_LEN = settings.MAX_LEN
     filepath = "{}/{}".format(bucket, filename)
     logger.info("TEST_MODE : {}".format(TEST_MODE))
     logger.info("STOP_WORDS : {}".format(str(STOP_WORDS)))
