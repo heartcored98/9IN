@@ -16,8 +16,9 @@
 read -e -p 'Function Name: ' -i "test_sele" function_name
 cd ../
 
-#rm -rf bin
-#mkdir -p bin
+
+#cd packages
+
 # Get chromedriver
 #curl -SL https://chromedriver.storage.googleapis.com/2.37/chromedriver_linux64.zip > chromedriver.zip
 #unzip chromedriver.zip
@@ -28,12 +29,14 @@ cd ../
 
 # Clean
 #rm headless-chromium.zip chromedriver.zip
+#cd ..
 
 cp packages_sele.zip ori_packages_sele.zip
-zip -g packages_sele.zip handler_post_content.py parser_content.py pusher_telegram.py s3_utils.py utils.py selenium_driver.py settings.yml chromedriver headless-chromium
+zip -g packages_sele.zip src/handler_post_content.py src/parser_content.py src/pusher_telegram.py src/s3_utils.py src/utils.py src/selenium_driver.py settings.yml packages/chromedriver packages/headless-chromium
 mv packages_sele.zip deploys_selenium.zip
 mv ori_packages_sele.zip packages_sele.zip
 aws s3 cp deploys_selenium.zip s3://guin-bucket/
+rm deploys_selenium.zip
 
 aws lambda delete-function --function-name $function_name
 aws lambda create-function --function-name $function_name \

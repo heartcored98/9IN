@@ -112,7 +112,7 @@ def download_df(filepath):
 
 
 if __name__ == '__main__':
-    from parser_post import get_ara_table
+    from src.parser_post import get_ara_table
 
     settings = load_yml_config()
     filename = settings.DEPLOY_ARA_WANTED_FILE_NAME

@@ -9,10 +9,11 @@ read -e -p "TEST MODE? (y/n): " -i "y" TEST_MODE
 
 cd ../
 cp packages.zip ori_packages.zip
-zip -g packages.zip parser_post.py pusher_telegram.py handler_monitor_post.py s3_utils.py utils.py settings.yml
+zip -g packages.zip src/parser_post.py src/pusher_telegram.py src/handler_monitor_post.py src/s3_utils.py src/utils.py settings.yml
 mv packages.zip deploys.zip
 mv ori_packages.zip packages.zip
 aws s3 cp deploys.zip s3://guin-bucket/
+rm deploys.zip
 
 aws lambda delete-function --function-name $function_name
 aws lambda create-function --function-name $function_name --runtime python3.6 --role arn:aws:iam::915999582461:role/role_guin --handler handler_monitor_post.ara_wanted_handler --region ap-northeast-2 --zip-file fileb://dummy.zip
