@@ -59,6 +59,7 @@
 - [ ] Add intent url to open the link with default browser(iOS/Android)    
 
 ### Deploy  
+- [ ] Move source code into scr folder
 - [ ] Deploy script change configuration between test/deploy  
 
 ### Security  
