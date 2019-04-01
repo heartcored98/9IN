@@ -62,7 +62,7 @@ def ara_wanted_handler(event, context):
 
     # ===== Fetching current posts ====== #
     logger.info("Fetching current posts...")
-    new_table = get_ara_table(url='https://ara.kaist.ac.kr/board/Wanted/', test_mode=TEST_MODE)
+    new_table = get_ara_table(STOP_WORDS=STOP_WORDS, url='https://ara.kaist.ac.kr/board/Wanted/', test_mode=TEST_MODE)
     logger.info("Fetching current posts done! {} posts.".format(len(new_table)))
 
     # ===== Upload current posts ====== #

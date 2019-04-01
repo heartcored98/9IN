@@ -14,7 +14,7 @@
 # Docker-compose install link : https://stackoverflow.com/questions/36685980/docker-is-installed-but-docker-compose-is-not-why
 
 read -e -p 'Function Name: ' -i "guin_post_content" function_name
-read -e -p 'Max Length of Message?: ' -i "120" MAX_LEN
+read -e -p 'Max Length of Message?: ' -i "200" MAX_LEN
 read -e -p "TEST MODE? (y/n): " -i "y" TEST_MODE
 
 if [[ $TEST_MODE == n ]]
