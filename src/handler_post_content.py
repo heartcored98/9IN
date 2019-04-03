@@ -20,7 +20,11 @@ def article_handler(event, context):
     logger.setLevel(logging.DEBUG)
 
     MAX_LEN = int(os.environ['MAX_LEN'])
-    TEST_MODE = bool(os.environ['TEST_MODE'])
+    TEST_MODE = True if os.environ['TEST_MODE'] == 'true' else False
+
+    logger.info("TEST_MODE : {}".format(TEST_MODE))
+    logger.info("MAX_LEN : {}".format(MAX_LEN))
+
 
     posts = event.get('posts', [])
 

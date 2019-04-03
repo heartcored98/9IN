@@ -24,7 +24,7 @@ def ara_wanted_handler(event, context):
 
     # ===== Get Settings Parameters ====== #
     ARTICLE_PARSER_LAMBDA = os.environ['ARTICLE_PARSER_LAMBDA'] #settings.ARTICLE_PARSER_LAMBDA
-    TEST_MODE = bool(os.environ['TEST_MODE']) #settings.TEST_MODE
+    TEST_MODE = True if os.environ['TEST_MODE'] == 'true' else False #settings.TEST_MODE
     STOP_WORDS = os.environ['STOP_WORDS'].split('/')
 
 
